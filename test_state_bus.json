@@ -1,0 +1,29 @@
+{
+  "workflow_id": "TASK-VERDICT-SAMPLE_REPO-001",
+  "fencing_token": 1,
+  "active_player": "starter_agent",
+  "stint_number": 1,
+  "goal": "Architectural Refactoring Spec: Targeted Invariant-Guarded Decoupling Strategy",
+  "verified_milestones": [
+    {
+      "step": 1,
+      "summary": "Completed CREATE_FILE on core/interfaces.py",
+      "commit_or_snapshot_id": "cow-snap-001-58"
+    },
+    {
+      "step": 2,
+      "summary": "Completed ENFORCE_INVARIANT on api_gateway.py",
+      "commit_or_snapshot_id": "cow-snap-002-61"
+    },
+    {
+      "step": 3,
+      "summary": "Completed ADD_TEST on tests/test_architectural_invariants.py",
+      "commit_or_snapshot_id": "cow-snap-003-67"
+    }
+  ],
+  "active_blockers": [
+    "Execute step 1: Define a clean abstraction protocol 'ExecutionProtocol' with standard execute() method to decouple upstream callers from direct service implementation."
+  ],
+  "dead_ends_log": [],
+  "metadata": {}
+}

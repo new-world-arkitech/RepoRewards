@@ -1,0 +1,108 @@
+{
+  "task_id": "TASK-VERDICT-SAMPLE_REPO-001",
+  "title": "Architectural Refactoring Spec: Targeted Invariant-Guarded Decoupling Strategy",
+  "target_repo": "C:\\Users\\New-World\\OneDrive\\Desktop\\RepoRewards\\sample_repo",
+  "consensus_verdict_ref": "VERDICT-SAMPLE_REPO-001",
+  "high_level_intent": "Pragmatic refactoring with invariant enforcement: refactor the focal hub into clean decoupled interfaces while preserving public caller contracts.",
+  "developer_cognitive_context": "Validates original developer intent for simple ergonomics while lifting historical compromises into explicit, invariant-guarded contracts.",
+  "architectural_invariants": [
+    {
+      "id": "INV-001",
+      "rule": "Domain entities must not directly import or invoke database / storage adapters.",
+      "invariant_type": "IMPORT_RESTRICTION",
+      "enforcement_scope": "core.*",
+      "verification_heuristic": "Check AST imports of core modules for storage/db dependencies."
+    },
+    {
+      "id": "INV-002",
+      "rule": "State transitions must remain atomic and preserve immutability or lock protection.",
+      "invariant_type": "CONCURRENCY_SAFETY",
+      "enforcement_scope": "services.*",
+      "verification_heuristic": "Verify that mutations occur within atomic block or return new instances."
+    },
+    {
+      "id": "INV-003",
+      "rule": "Public method signatures on caller interfaces must maintain backward compatibility.",
+      "invariant_type": "INTERFACE_CONTRACT",
+      "enforcement_scope": "api.*, services.*",
+      "verification_heuristic": "Verify parameter names and default values match previous AST signature."
+    }
+  ],
+  "execution_directives": [
+    {
+      "step_number": 1,
+      "action_type": "CREATE_FILE",
+      "target_file": "core/interfaces.py",
+      "target_symbol": "ExecutionProtocol",
+      "instruction": "Define a clean abstraction protocol 'ExecutionProtocol' with standard execute() method to decouple upstream callers from direct service implementation.",
+      "preconditions": [
+        "Repository path exists"
+      ],
+      "postconditions": [
+        "File 'core/interfaces.py' exists and exports ExecutionProtocol"
+      ],
+      "diff_strategy": "NEW_MODULE",
+      "code_snippet_template": "from typing import Protocol, Any, Dict\n\nclass ExecutionProtocol(Protocol):\n    def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:\n        ...\n"
+    },
+    {
+      "step_number": 2,
+      "action_type": "ENFORCE_INVARIANT",
+      "target_file": "api_gateway.py",
+      "target_symbol": "Processor",
+      "instruction": "Refactor 'api_gateway.py' to inherit or implement ExecutionProtocol. Wrap any direct persistence calls into an injected or encapsulated adapter. Validate state preconditions before execution.",
+      "preconditions": [
+        "core/interfaces.py must be importable"
+      ],
+      "postconditions": [
+        "'api_gateway.py' implements protocol and passes AST validation without direct DB calls"
+      ],
+      "diff_strategy": "AST_TRANSFORMATION",
+      "code_snippet_template": null
+    },
+    {
+      "step_number": 3,
+      "action_type": "ADD_TEST",
+      "target_file": "tests/test_architectural_invariants.py",
+      "target_symbol": "test_invariant_preservation",
+      "instruction": "Implement automated test suite verifying that INV-001 (clean layer boundaries) and INV-003 (backward compatibility) are strictly satisfied.",
+      "preconditions": [
+        "target_file refactored"
+      ],
+      "postconditions": [
+        "Test passes when executed by test runner"
+      ],
+      "diff_strategy": "NEW_MODULE",
+      "code_snippet_template": "def test_invariant_preservation():\n    # Verify invariant compliance\n    assert True\n"
+    }
+  ],
+  "verification_gates": [
+    {
+      "gate_id": "GATE-01",
+      "gate_name": "AST Syntax & Symbol Audit",
+      "gate_type": "AST_SYNTAX_CHECK",
+      "target": "all_mutated_files",
+      "criteria": "All modified and newly created files must compile to valid Python AST without syntax errors."
+    },
+    {
+      "gate_id": "GATE-02",
+      "gate_name": "Layer Boundary & Import Restriction",
+      "gate_type": "IMPORT_BOUNDARY_AUDIT",
+      "target": "core/",
+      "criteria": "Core domain files must have zero direct imports of persistence or external HTTP libraries."
+    },
+    {
+      "gate_id": "GATE-03",
+      "gate_name": "Invariant Assertion Execution",
+      "gate_type": "INVARIANT_ASSERTION",
+      "target": "tests/test_architectural_invariants.py",
+      "criteria": "Automated invariant tests must execute with zero failures or regressions."
+    }
+  ],
+  "metadata": {
+    "session_id": "3194c2e3",
+    "deliberation_verdict": "Targeted Invariant-Guarded Decoupling Strategy",
+    "churn_hotspots_count": 3,
+    "has_cycles": false,
+    "high_churn": true
+  }
+}
