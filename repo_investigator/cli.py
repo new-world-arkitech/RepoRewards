@@ -156,6 +156,12 @@ def run_cli():
         help="Display colored unified diffs of all synthesized and refactored code",
     )
     parser.add_argument(
+        "--export-patch",
+        type=str,
+        default=None,
+        help="Export synthesized architectural modifications as a standard Git unified patch file (.patch)",
+    )
+    parser.add_argument(
         "--review",
         action="store_true",
         help="Interactive review mode: prompt before applying mutations to each file",
@@ -613,6 +619,13 @@ def run_cli():
             for fpath, diff_content in rep.unified_diffs.items():
                 syntax_diff = Syntax(diff_content, "diff", theme="monokai", line_numbers=True)
                 console.print(Panel(syntax_diff, title=f"Unified Diff: [yellow]{fpath}[/yellow]", border_style="cyan"))
+
+        if rep.unified_diffs and args.export_patch:
+            patch_path = Path(args.export_patch).resolve()
+            patch_path.parent.mkdir(parents=True, exist_ok=True)
+            full_patch_text = "\n".join(rep.unified_diffs.values())
+            patch_path.write_text(full_patch_text, encoding="utf-8")
+            console.print(f"\n[bold green][OK] Successfully exported unified patch to:[/bold green] [cyan]{patch_path}[/cyan]")
 
         # 5c. Display Verbose Reasoning Chains if requested
         if args.verbose and rep.step_traces:

@@ -218,9 +218,12 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
       <h2>Zero-LLM Coach Live Telemetry</h2>
       <p class="intro" style="margin-bottom:0">Deterministic microsecond reflex loop running after every turn. Monitors agent health, enforces Kleppmann CAS fencing, and executes sub-28ms warm roster substitutions.</p>
     </div>
-    <div class="live-pill" id="livePill">
-      <div class="pulse-dot" id="liveDot"></div>
-      <span id="liveStatusText">LIVE REFLEX STREAM</span>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <button class="btn sm" id="connectLocalBtn" style="font-size:.75rem">🔌 Connect Engine</button>
+      <div class="live-pill" id="livePill">
+        <div class="pulse-dot" id="liveDot"></div>
+        <span id="liveStatusText">LIVE REFLEX STREAM</span>
+      </div>
     </div>
   </div>
 
@@ -743,12 +746,36 @@ async function checkLocalDaemon() {
     if (res.ok) {
       appendLog("DAEMON", "tag-ok", "Connected to local FlowMind daemon (http://localhost:8000). Piping live AST execution!");
       $("liveStatusText").textContent = "LOCAL DAEMON CONNECTED";
+      if ($("connectLocalBtn")) {
+        $("connectLocalBtn").textContent = "🟢 Engine Connected";
+      }
     }
   } catch (e) {
     // Expected when user is viewing statically on GitHub Pages without local server
   }
 }
 checkLocalDaemon();
+
+if ($("connectLocalBtn")) {
+  $("connectLocalBtn").onclick = async () => {
+    appendLog("DAEMON", "tag-coach", "Probing local FlowMind engine at http://localhost:8000...");
+    try {
+      const res = await fetch("http://localhost:8000/v1/health", { signal: AbortSignal.timeout(2000) });
+      if (res.ok) {
+        const data = await res.json();
+        appendLog("DAEMON", "tag-ok", `Successfully connected to FlowMind engine! (Active workflows: ${data.active_workflows})`);
+        $("liveStatusText").textContent = "LOCAL ENGINE (127.0.0.1:8000)";
+        $("connectLocalBtn").textContent = "🟢 Engine Connected";
+        toast("Connected to FlowMind Engine at http://localhost:8000");
+      } else {
+        appendLog("DAEMON", "tag-swap", `Server returned HTTP ${res.status}. Falling back to simulator.`);
+      }
+    } catch (e) {
+      appendLog("DAEMON", "tag-state", "Local server not reachable at http://localhost:8000. Start it via 'flowmind serve'. Running autonomous simulation.");
+      toast("No local engine found at localhost:8000. Running simulator mode.");
+    }
+  };
+}
 
 /* =========================================================================
    MANUAL FORMULA SANDBOX

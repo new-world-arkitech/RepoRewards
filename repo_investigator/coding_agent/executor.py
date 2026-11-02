@@ -88,6 +88,7 @@ class ReasoningCodingAgent:
         repo_root = Path(target_dir or spec.target_repo).resolve()
         step_traces: List[StepReasoningTrace] = []
         files_mutated: List[str] = []
+        synthesized_code_map: Dict[str, str] = {}
         unified_diffs: Dict[str, str] = {}
         all_steps_succeeded = True
 
@@ -118,6 +119,7 @@ class ReasoningCodingAgent:
                 all_steps_succeeded = False
 
             if code is not None and step_succeeded:
+                synthesized_code_map[directive.target_file] = code
                 try:
                     file_path = self._resolve_safe_path(repo_root, directive.target_file)
                     original_content = ""
@@ -208,20 +210,25 @@ class ReasoningCodingAgent:
                         is_workspace_broken=not step_succeeded,
                     )
 
-        # Evaluate Verification Gates
+        # Evaluate Verification Gates (Auditing both disk mutations and in-memory synthesized ASTs for dry-run integrity)
+        target_files = files_mutated if files_mutated else list(synthesized_code_map.keys())
         gate_results: List[GateEvaluationResult] = []
         for gate in spec.verification_gates:
             if gate.gate_type == GateType.AST_SYNTAX_CHECK:
                 syntax_ok = True
                 failed_file = ""
-                for mf in files_mutated:
-                    p = repo_root / mf
-                    if p.exists():
+                for tf in target_files:
+                    code_to_check = synthesized_code_map.get(tf)
+                    if code_to_check is None:
+                        p = repo_root / tf
+                        if p.exists():
+                            code_to_check = p.read_text(encoding="utf-8", errors="replace")
+                    if code_to_check is not None:
                         try:
-                            ast.parse(p.read_text(encoding="utf-8"))
+                            ast.parse(code_to_check)
                         except Exception as e:
                             syntax_ok = False
-                            failed_file = f"{mf}: {e}"
+                            failed_file = f"{tf}: {e}"
                             break
 
                 gate_results.append(
@@ -229,22 +236,25 @@ class ReasoningCodingAgent:
                         gate_id=gate.gate_id,
                         gate_name=gate.gate_name,
                         passed=syntax_ok,
-                        details="All mutated files pass AST syntax checks." if syntax_ok else f"Syntax error in {failed_file}",
+                        details="All mutated and synthesized files pass AST syntax checks." if syntax_ok else f"Syntax error in {failed_file}",
                     )
                 )
 
             elif gate.gate_type == GateType.IMPORT_BOUNDARY_AUDIT:
                 boundary_ok = True
                 leak_found = ""
-                for mf in files_mutated:
-                    if "core" in mf:
-                        p = repo_root / mf
-                        if p.exists():
-                            content = p.read_text(encoding="utf-8")
-                            for line in content.splitlines():
+                for tf in target_files:
+                    if "core" in tf:
+                        code_to_check = synthesized_code_map.get(tf)
+                        if code_to_check is None:
+                            p = repo_root / tf
+                            if p.exists():
+                                code_to_check = p.read_text(encoding="utf-8", errors="replace")
+                        if code_to_check is not None:
+                            for line in code_to_check.splitlines():
                                 if "import db" in line or "import sql" in line or "import requests" in line:
                                     boundary_ok = False
-                                    leak_found = f"{mf} contains illegal import: '{line.strip()}'"
+                                    leak_found = f"{tf} contains illegal import: '{line.strip()}'"
                                     break
 
                 gate_results.append(

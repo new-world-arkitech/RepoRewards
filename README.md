@@ -3,7 +3,7 @@
 An autonomous multi-agent cognitive architecture system that scans repositories, investigates the **"Flow" of Software Architecture** and the **thought processes of developers**, deliberates via a **multi-perspective group reasoning council**, synthesizes findings into **strictly typed machine-readable directives**, and executes them with an **autonomous Reasoning Coding Agent**.
 
 [![FlowMind CI / CD Pipeline](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/ci.yml/badge.svg)](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/ci.yml)
-[![GitHub Pages](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/pages.yml/badge.svg)](https://new-world-arkitech.github.io/RepoRewards/)
+[![GitHub Pages](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/static.yml/badge.svg)](https://new-world-arkitech.github.io/RepoRewards/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 🌐 **Live Interactive Wall of Evolution**: [new-world-arkitech.github.io/RepoRewards](https://new-world-arkitech.github.io/RepoRewards/)  
@@ -217,9 +217,13 @@ flowmind serve
 # Open http://localhost:8000/dashboard in your browser
 ```
 
-### 2. Generate Interactive Client-Facing HTML Audit Report
+### 2. Generate Interactive Client-Facing HTML Audit Report & Unified Patch
 ```bash
+# Generate executive HTML report
 flowmind sample_repo --dry-run --report-html client_audit.html
+
+# Preview colored diffs and export a git-applicable unified patch
+flowmind sample_repo --dry-run --diff --export-patch refactor.patch
 ```
 
 ### 3. Run Investigation with Google Gemma 3B Carrier

@@ -46,6 +46,35 @@ def check_model_providers() -> Tuple[bool, str, str]:
         return True, ", ".join(keys_found), "Live cloud LLM carrier(s) detected and ready."
     return True, "Simulated Cognitive Engine (Default)", "No API key configured. Offline high-fidelity simulated engine active (100% free)."
 
+def check_local_inference_servers() -> Tuple[bool, str, str]:
+    """Probes for active local LLM inference engines (Ollama, SGLang, vLLM)."""
+    import urllib.request
+    import json
+
+    # 1. Probe Ollama daemon
+    try:
+        req = urllib.request.Request("http://127.0.0.1:11434/api/tags", headers={"User-Agent": "FlowMind-Doctor"})
+        with urllib.request.urlopen(req, timeout=0.4) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m.get("name") for m in data.get("models", []) if m.get("name")]
+            models_str = ", ".join(models[:4]) or "Daemon running (no models pulled yet)"
+            return True, f"Ollama Active ({len(models)} models)", f"Detected at localhost:11434: {models_str}"
+    except Exception:
+        pass
+
+    # 2. Probe SGLang/vLLM local port
+    for port in (30000, 8000):
+        try:
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/models", headers={"User-Agent": "FlowMind-Doctor"})
+            with urllib.request.urlopen(req, timeout=0.3) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                models = [m.get("id") for m in data.get("data", []) if m.get("id")]
+                return True, f"Local Cluster Active (port {port})", f"Models: {', '.join(models[:3])}"
+        except Exception:
+            pass
+
+    return False, "Not Detected (localhost:11434 / 30000)", "No local daemon running. (Optional: run 'ollama run gemma:3b' for offline inference)"
+
 def check_optional_dependencies() -> List[Tuple[str, bool, str]]:
     deps = [
         ("FastAPI & Uvicorn (REST API Server)", "fastapi", "flowmind --serve"),
@@ -128,6 +157,14 @@ def run_doctor() -> bool:
             "[bold green]ENABLED[/bold green]" if ok else "[dim yellow]OPTIONAL[/dim yellow]",
             details,
         )
+
+    # Local LLM Inference Probe
+    loc_ok, loc_val, loc_details = check_local_inference_servers()
+    opt_table.add_row(
+        "Local LLM Inference (Ollama/vLLM)",
+        "[bold green]ONLINE[/bold green]" if loc_ok else "[dim yellow]OFFLINE[/dim yellow]",
+        loc_details,
+    )
 
     console.print(opt_table)
 

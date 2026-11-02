@@ -13,6 +13,7 @@ from repo_investigator.doctor import (
     check_git_installed,
     check_model_providers,
     check_optional_dependencies,
+    check_local_inference_servers,
     run_doctor,
 )
 
@@ -38,6 +39,12 @@ def test_check_optional_dependencies():
     # FastAPI was installed in prior step
     fastapi_check = next(r for r in results if "FastAPI" in r[0])
     assert fastapi_check[1] is True
+
+def test_check_local_inference_servers():
+    ok, status, details = check_local_inference_servers()
+    assert isinstance(ok, bool)
+    assert isinstance(status, str)
+    assert isinstance(details, str)
 
 def test_run_doctor():
     success = run_doctor()
