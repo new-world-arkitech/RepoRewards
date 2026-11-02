@@ -2,6 +2,13 @@
 
 An autonomous multi-agent cognitive architecture system that scans repositories, investigates the **"Flow" of Software Architecture** and the **thought processes of developers**, deliberates via a **multi-perspective group reasoning council**, synthesizes findings into **strictly typed machine-readable directives**, and executes them with an **autonomous Reasoning Coding Agent**.
 
+[![FlowMind CI / CD Pipeline](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/ci.yml/badge.svg)](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/ci.yml)
+[![GitHub Pages](https://github.com/new-world-arkitech/RepoRewards/actions/workflows/pages.yml/badge.svg)](https://new-world-arkitech.github.io/RepoRewards/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+🌐 **Live Interactive Wall of Evolution**: [new-world-arkitech.github.io/RepoRewards](https://new-world-arkitech.github.io/RepoRewards/)  
+🧠 **Public Model Evolution Ledger**: [`MODEL_EVOLUTION.md`](MODEL_EVOLUTION.md)
+
 ---
 
 ## Architecture Overview
@@ -312,7 +319,10 @@ python -m pytest -v
 
 FlowMind operates on an **Attribution-First AI** principle: every capability leap, architectural invariant, and code transformation pattern synthesized from analyzed repositories is memorialized and accredited to the original repository owners and maintainers in a dedicated public log.
 
-See the live, version-controlled public ledger:  
+See the interactive GitHub Pages site:  
+🌐 **[FlowMind: Wall of Evolution](https://new-world-arkitech.github.io/RepoRewards/)**
+
+And the version-controlled markdown ledger:  
 👉 **[`MODEL_EVOLUTION.md`](MODEL_EVOLUTION.md)**
 
 To inspect the model's current cognitive brain and accredited contributors in your terminal:
