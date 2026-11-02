@@ -15,12 +15,16 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Configure Git Runner Identity
+        shell: bash
         run: |
           git config --global user.name "FlowMind CI Runner"
           git config --global user.email "ci@flowmind.dev"
@@ -34,12 +38,14 @@ jobs:
           cache: "pip"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -e ".[all]"
           python -m pip install pytest httpx
 
       - name: Run Test Suite
+        shell: bash
         run: |
           python -m pytest -v
 
@@ -67,3 +73,20 @@ jobs:
         with:
           name: flowmind-dist
           path: dist/*
+
+  validate-node24-action:
+    name: Validate Node.js 24 Action & Runtime
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Verify Node.js 24 Engine & Run Action Tests
+        run: |
+          node -v
+          npm test

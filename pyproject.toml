@@ -14,11 +14,6 @@ authors = [
     {name = "new-world-arkitech", email = "arkitech@new-world-arkitech.dev"}
 ]
 
-[project.urls]
-Homepage = "https://cosmicsoul.org"
-Developer = "https://new-world-arkitech.dev"
-Repository = "https://github.com/new-world-arkitech/RepoRewards"
-Documentation = "https://github.com/new-world-arkitech/RepoRewards#readme"
 dependencies = [
     "pydantic>=2.0.0",
     "rich>=13.0.0",
@@ -28,6 +23,12 @@ dependencies = [
     "httpx>=0.24.0",
     "pytest>=7.0.0",
 ]
+
+[project.urls]
+Homepage = "https://cosmicsoul.org"
+Developer = "https://new-world-arkitech.dev"
+Repository = "https://github.com/new-world-arkitech/RepoRewards"
+Documentation = "https://github.com/new-world-arkitech/RepoRewards#readme"
 
 [project.optional-dependencies]
 redis = ["redis>=5.0.0"]

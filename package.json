@@ -1,0 +1,34 @@
+{
+  "name": "flowmind-action",
+  "version": "1.0.0",
+  "description": "FlowMind Autonomous Multi-Agent Architectural Invariant Audit & Reviewer GitHub Action",
+  "main": "index.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "github-action",
+    "node24",
+    "flowmind",
+    "architecture-audit",
+    "invariants",
+    "multi-agent",
+    "deliberation-council",
+    "cognitive-brain",
+    "code-review"
+  ],
+  "author": "Cosmic Souls Of Sovereignty Inc. (@new-world-arkitech)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/new-world-arkitech/RepoRewards.git"
+  },
+  "bugs": {
+    "url": "https://github.com/new-world-arkitech/RepoRewards/issues"
+  },
+  "homepage": "https://new-world-arkitech.github.io/RepoRewards/",
+  "license": "MIT"
+}

@@ -37,21 +37,15 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install FlowMind Engine
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[all]"
-
-      - name: Execute FlowMind Invariant Audit & Post Scorecard
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python -m repo_investigator.cli . \
-            --tier auto \
-            --dry-run \
-            --report-html flowmind-report.html \
-            --post-pr-comment \
-            --fail-on-gates
+      - name: Execute FlowMind Invariant Audit Action (Node.js 24)
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tier: auto
+          dry-run: true
+          report-html: flowmind-report.html
+          post-pr-comment: true
+          fail-on-gates: true
 
       - name: Upload HTML Executive Architecture Report
         if: always()
