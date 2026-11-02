@@ -204,7 +204,29 @@ flowmind --guide "Add Redis distributed caching to rewards calculation"
 flowmind brain
 ```
 
-### 6. Run the Test Suite
+### 6. GitHub REST API Engine (Compliant with Official GitHub REST Guides)
+Comprehensive client suite adhering strictly to [GitHub REST API Guides](https://docs.github.com/en/rest/guides):
+```bash
+# 1. Inspect real-time GitHub rate limits and quota status
+flowmind github status
+
+# 2. Create a new GitHub repository, attach remote origin, and push main branch
+flowmind github create-repo MyNewRepo --private --set-remote --push
+
+# 3. Post / update architectural scorecard comment on Pull Request
+flowmind github post-comment --repo owner/repo --pr 42
+
+# 4. Post CI Commit Status on a specific commit
+flowmind github commit-status --repo owner/repo --sha abc1234 --state success
+
+# 5. Create a GitHub Check Run with structured evaluation
+flowmind github check-run --repo owner/repo --sha abc1234 --conclusion success
+
+# 6. Verify incoming webhook HMAC-SHA256 signature
+flowmind github verify-webhook --secret "mysecret" --signature "sha256=..." --payload "payload.json"
+```
+
+### 7. Run the Test Suite
 ```bash
 python -m pytest -v
 ```

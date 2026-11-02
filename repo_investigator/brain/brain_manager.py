@@ -80,26 +80,27 @@ class BrainManager:
         top_contributors: List[str] = []
         license_type = "Proprietary / Unspecified"
 
-        # 1. Try Git remote origin URL
-        try:
-            res = subprocess.run(
-                ["git", "config", "--get", "remote.origin.url"],
-                cwd=repo_dir,
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=5,
-            )
-            raw_url = res.stdout.strip()
-            if raw_url:
-                remote_url = raw_url
-                # Match github.com/owner/repo or git@github.com:owner/repo
-                m = re.search(r"github\.com[:/]([a-zA-Z0-9._-]+)/([a-zA-Z0-9._-]+)", raw_url)
-                if m and not owner:
-                    owner = m.group(1)
-                    repo_name = m.group(2).removesuffix(".git")
-        except Exception:
-            pass
+        # 1. Try Git remote origin URL (only if repo_dir itself contains a .git boundary)
+        if (repo_dir / ".git").exists():
+            try:
+                res = subprocess.run(
+                    ["git", "config", "--get", "remote.origin.url"],
+                    cwd=repo_dir,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=5,
+                )
+                raw_url = res.stdout.strip()
+                if raw_url:
+                    remote_url = raw_url
+                    # Match github.com/owner/repo or git@github.com:owner/repo
+                    m = re.search(r"github\.com[:/]([a-zA-Z0-9._-]+)/([a-zA-Z0-9._-]+)", raw_url)
+                    if m and not owner:
+                        owner = m.group(1)
+                        repo_name = m.group(2).removesuffix(".git")
+            except Exception:
+                pass
 
         # 2. Extract commit authors from archaeology
         if archaeology and archaeology.commits:

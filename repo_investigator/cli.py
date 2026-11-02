@@ -25,7 +25,13 @@ from repo_investigator.translator.command_compiler import CommandCompiler
 from repo_investigator.bench_rotation.models import ExecutionTier
 from repo_investigator.extractor.repo_loader import is_git_remote_url
 from repo_investigator.reports.html_reporter import HTMLReportGenerator
-from repo_investigator.integrations.github import post_pr_comment
+from repo_investigator.integrations.github import (
+    GITHUB_API_VERSION,
+    GitHubPRCommenter,
+    GitHubRestClient,
+    GitHubWebhookVerifier,
+    post_pr_comment,
+)
 from repo_investigator.coach import DeveloperAid, SessionRetrospectiveBuilder
 from repo_investigator.brain import BrainManager
 
@@ -41,6 +47,12 @@ def run_cli():
         nargs="?",
         default=".",
         help="Path to repository to scan and investigate",
+    )
+    parser.add_argument(
+        "extra_args",
+        nargs="*",
+        default=[],
+        help="Subaction or parameters for subcommands (e.g. github status, github create-repo <name>)",
     )
     parser.add_argument(
         "--dry-run",
@@ -213,6 +225,85 @@ def run_cli():
         default=None,
         help="Gemma model tag/name (default: gemma:3b)",
     )
+    # GitHub REST Integration arguments
+    parser.add_argument(
+        "--github-action",
+        type=str,
+        choices=["status", "create-repo", "post-comment", "commit-status", "check-run", "verify-webhook"],
+        default=None,
+        help="GitHub REST Integration action to perform (per GitHub Docs REST Guides)",
+    )
+    parser.add_argument(
+        "--repo-name",
+        type=str,
+        default=None,
+        help="Target repository name or 'owner/repo' for GitHub operations",
+    )
+    parser.add_argument(
+        "--commit-sha",
+        type=str,
+        default=None,
+        help="Target Git commit SHA for Commit Status or Check Run",
+    )
+    parser.add_argument(
+        "--status-state",
+        type=str,
+        choices=["pending", "success", "failure", "error"],
+        default="success",
+        help="State for Commit Status (pending, success, failure, error)",
+    )
+    parser.add_argument(
+        "--check-conclusion",
+        type=str,
+        choices=["success", "failure", "neutral", "cancelled", "timed_out", "action_required"],
+        default="success",
+        help="Conclusion for Check Run",
+    )
+    parser.add_argument(
+        "--private-repo",
+        action="store_true",
+        help="Create GitHub repository as private (default is public)",
+    )
+    parser.add_argument(
+        "--set-remote",
+        action="store_true",
+        help="Automatically configure 'origin' git remote after creating repository",
+    )
+    parser.add_argument(
+        "--push",
+        action="store_true",
+        help="Automatically push 'main' branch after creating repository and setting remote",
+    )
+    parser.add_argument(
+        "--description",
+        type=str,
+        default=None,
+        help="Description for GitHub repository or commit status",
+    )
+    parser.add_argument(
+        "--comment-body",
+        type=str,
+        default=None,
+        help="Custom markdown text to post as PR comment",
+    )
+    parser.add_argument(
+        "--webhook-secret",
+        type=str,
+        default=None,
+        help="Shared secret for Webhook HMAC-SHA256 signature verification",
+    )
+    parser.add_argument(
+        "--webhook-signature",
+        type=str,
+        default=None,
+        help="X-Hub-Signature-256 header value to verify (sha256=...)",
+    )
+    parser.add_argument(
+        "--webhook-payload",
+        type=str,
+        default=None,
+        help="Raw payload string or path to JSON payload file for webhook verification",
+    )
 
     args = parser.parse_args()
 
@@ -236,6 +327,11 @@ def run_cli():
     if args.repo_path in ("brain", "brain-inspect", "brain:inspect"):
         bp = Path(args.brain_path) if args.brain_path else None
         BrainManager.print_brain_inspect(brain_path=bp)
+        return
+
+    # GitHub Integration CLI modes (per GitHub Docs REST Guides)
+    if args.repo_path == "github" or args.github_action:
+        _handle_github_cli(args)
         return
 
     # Developer's Aid standalone modes: Explain, Debug, Guide
@@ -591,6 +687,188 @@ def run_cli():
         )
 
     console.print("\n[bold green][SUCCESS] Full Cognitive Pipeline Execution Finished Successfully.[/bold green]\n")
+
+def _handle_github_cli(args: argparse.Namespace):
+    """Handles GitHub REST API operations following GitHub Docs Guides."""
+    client = GitHubRestClient(token=args.github_token)
+
+    action = args.github_action
+    if not action and args.extra_args:
+        action = args.extra_args[0]
+    if not action and args.repo_name in ("status", "create-repo", "post-comment", "commit-status", "check-run", "verify-webhook"):
+        action = args.repo_name
+
+    if not action:
+        action = "status"
+
+    repo_name_from_extra = args.extra_args[1] if (args.extra_args and len(args.extra_args) > 1) else None
+    target_repo = args.repo_name or repo_name_from_extra
+
+    if action == "status":
+        console.print(Panel(
+            f"[bold cyan]GitHub REST API Engine[/bold cyan]\n"
+            f"[dim]Version Pin: {GITHUB_API_VERSION} | Base URL: https://api.github.com[/dim]",
+            title="[bold green]GitHub REST Diagnostics[/bold green]",
+            expand=False,
+        ))
+
+        try:
+            user = client.get_authenticated_user() if client.token else None
+            rate_info = client.get_rate_limit()
+            resources = rate_info.get("resources", {})
+
+            if user:
+                console.print(f"[bold green]Authenticated User:[/bold green] [bold cyan]{user.get('login')}[/bold cyan] ({user.get('name', 'N/A')})")
+                console.print(f"[dim]Profile: {user.get('html_url')} | Public Repos: {user.get('public_repos', 0)}[/dim]\n")
+            else:
+                console.print("[yellow][NOTICE] No GITHUB_TOKEN provided. Querying unauthenticated public quotas.[/yellow]\n")
+
+            table = Table(title="GitHub REST API Rate Limit Status", show_header=True, header_style="bold magenta")
+            table.add_column("Resource Domain", style="cyan")
+            table.add_column("Limit", justify="right")
+            table.add_column("Remaining", justify="right")
+            table.add_column("Used", justify="right")
+            table.add_column("Reset In", justify="right")
+
+            import time
+            for res_name, res_data in resources.items():
+                reset_epoch = res_data.get("reset", 0)
+                sec_left = max(0, reset_epoch - int(time.time()))
+                mins_left = f"{sec_left // 60}m {sec_left % 60}s"
+                remaining = res_data.get("remaining", 0)
+                rem_style = "[bold green]" if remaining > 100 else ("[bold yellow]" if remaining > 0 else "[bold red]")
+                table.add_row(
+                    res_name,
+                    str(res_data.get("limit", 0)),
+                    f"{rem_style}{remaining}[/]",
+                    str(res_data.get("used", 0)),
+                    mins_left,
+                )
+
+            console.print(table)
+        except Exception as e:
+            console.print(f"[bold red][ERROR] Failed to query GitHub API:[/bold red] {e}")
+
+    elif action == "create-repo":
+        repo_name = target_repo
+        if not repo_name or repo_name == "create-repo":
+            console.print("[bold red][ERROR] Please specify a repository name via --repo-name <name>[/bold red]")
+            return
+
+        desc = args.description or "FlowMind: Autonomous Multi-Agent Deliberation & Architectural Excavation Engine"
+        console.print(f"[bold cyan]Creating GitHub repository:[/bold cyan] {repo_name} (private={args.private_repo})...")
+        try:
+            repo_data = client.create_repository(
+                name=repo_name,
+                description=desc,
+                private=args.private_repo,
+            )
+            html_url = repo_data.get("html_url")
+            clone_url = repo_data.get("clone_url")
+            console.print(Panel(
+                f"[bold green]Repository created successfully![/bold green]\n"
+                f"URL: [cyan]{html_url}[/cyan]\n"
+                f"Clone URL: [dim]{clone_url}[/dim]",
+                title="[bold green]GitHub Repository Ready[/bold green]",
+                expand=False,
+            ))
+
+            if args.set_remote and clone_url:
+                import subprocess
+                res = subprocess.run(["git", "remote", "add", "origin", clone_url], capture_output=True, text=True)
+                if res.returncode == 0:
+                    console.print("[bold green][OK] Attached git remote 'origin'.[/bold green]")
+                else:
+                    console.print(f"[yellow][NOTICE] Could not attach remote (might already exist): {res.stderr.strip()}[/yellow]")
+
+            if args.push:
+                import subprocess
+                console.print("[bold cyan]Pushing main branch to origin...[/bold cyan]")
+                res = subprocess.run(["git", "push", "-u", "origin", "main"], capture_output=True, text=True)
+                if res.returncode == 0:
+                    console.print("[bold green][SUCCESS] Pushed main branch to GitHub![/bold green]")
+                else:
+                    console.print(f"[yellow]Push output: {res.stdout.strip()} {res.stderr.strip()}[/yellow]")
+
+        except Exception as e:
+            console.print(f"[bold red][ERROR] Failed to create repository:[/bold red] {e}")
+
+    elif action == "post-comment":
+        if not args.repo_name or not args.pr_number:
+            console.print("[bold red][ERROR] --repo-name <owner/repo> and --pr-number <int> are required to post comment.[/bold red]")
+            return
+        parts = args.repo_name.split("/", 1)
+        if len(parts) != 2:
+            console.print("[bold red][ERROR] --repo-name must be in 'owner/repo' format.[/bold red]")
+            return
+        owner, repo = parts
+        body = args.comment_body or "### FlowMind Architectural Verification Passed ✅"
+        try:
+            client.post_or_update_pr_comment(owner=owner, repo=repo, issue_number=args.pr_number, body=body)
+            console.print(f"[bold green][OK] Successfully posted comment to {args.repo_name}#{args.pr_number}[/bold green]")
+        except Exception as e:
+            console.print(f"[bold red][ERROR] Failed to post PR comment:[/bold red] {e}")
+
+    elif action == "commit-status":
+        if not args.repo_name or not args.commit_sha:
+            console.print("[bold red][ERROR] --repo-name <owner/repo> and --commit-sha <sha> are required for commit status.[/bold red]")
+            return
+        parts = args.repo_name.split("/", 1)
+        if len(parts) != 2:
+            console.print("[bold red][ERROR] --repo-name must be in 'owner/repo' format.[/bold red]")
+            return
+        owner, repo = parts
+        try:
+            client.create_commit_status(
+                owner=owner,
+                repo=repo,
+                sha=args.commit_sha,
+                state=args.status_state,
+                description=args.description or "FlowMind architectural invariants verified",
+            )
+            console.print(f"[bold green][OK] Posted commit status '{args.status_state}' to {args.commit_sha[:7]}[/bold green]")
+        except Exception as e:
+            console.print(f"[bold red][ERROR] Failed to post commit status:[/bold red] {e}")
+
+    elif action == "check-run":
+        if not args.repo_name or not args.commit_sha:
+            console.print("[bold red][ERROR] --repo-name <owner/repo> and --commit-sha <sha> are required for check run.[/bold red]")
+            return
+        parts = args.repo_name.split("/", 1)
+        if len(parts) != 2:
+            console.print("[bold red][ERROR] --repo-name must be in 'owner/repo' format.[/bold red]")
+            return
+        owner, repo = parts
+        try:
+            client.create_check_run(
+                owner=owner,
+                repo=repo,
+                name="FlowMind Architectural Check",
+                head_sha=args.commit_sha,
+                conclusion=args.check_conclusion,
+                title="FlowMind Invariant Assessment",
+                summary=args.description or "All architectural verification gates passed.",
+            )
+            console.print(f"[bold green][OK] Created check run on {args.commit_sha[:7]} ({args.check_conclusion})[/bold green]")
+        except Exception as e:
+            console.print(f"[bold red][ERROR] Failed to create check run:[/bold red] {e}")
+
+    elif action == "verify-webhook":
+        if not args.webhook_secret or not args.webhook_signature:
+            console.print("[bold red][ERROR] --webhook-secret and --webhook-signature are required.[/bold red]")
+            return
+        payload = b""
+        if args.webhook_payload:
+            p = Path(args.webhook_payload)
+            if p.exists():
+                payload = p.read_bytes()
+            else:
+                payload = args.webhook_payload.encode("utf-8")
+        valid = GitHubWebhookVerifier.verify_signature(payload, args.webhook_signature, args.webhook_secret)
+        if valid:
+            console.print("[bold green][VALID] Webhook signature verified successfully (HMAC-SHA256 matched).[/bold green]")
+        else:
+            console.print("[bold red][INVALID] Webhook signature verification failed.[/bold red]")
 
 if __name__ == "__main__":
     run_cli()

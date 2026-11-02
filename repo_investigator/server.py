@@ -28,6 +28,7 @@ from repo_investigator.coach import (
     WhatWeLearnedReport,
 )
 from repo_investigator.brain import CognitiveBrain, BrainManager, ModelEvolutionStage
+from repo_investigator.integrations.github import GitHubWebhookVerifier, GitHubRestClient
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +310,82 @@ def get_cognitive_brain_evolution(brain_path: Optional[str] = Query(None, descri
     bp = Path(brain_path) if brain_path else None
     brain = BrainManager.load_brain(bp)
     return brain.evolution_stages
+
+@app.post("/v1/webhooks/github")
+async def github_webhook_endpoint(request: Request, background_tasks: BackgroundTasks):
+    """
+    Receives and processes GitHub webhook events (e.g. pull_request, push, ping).
+    Enforces HMAC-SHA256 signature verification (X-Hub-Signature-256) per GitHub Docs Guides.
+    """
+    signature = request.headers.get("X-Hub-Signature-256")
+    event_type = request.headers.get("X-GitHub-Event", "ping")
+    delivery_id = request.headers.get("X-GitHub-Delivery", "")
+    secret = os.getenv("GITHUB_WEBHOOK_SECRET")
+
+    payload_bytes = await request.body()
+
+    if secret:
+        if not signature or not GitHubWebhookVerifier.verify_signature(payload_bytes, signature, secret):
+            logger.warning("GitHub webhook signature verification failed for delivery %s", delivery_id)
+            raise HTTPException(status_code=401, detail="Invalid X-Hub-Signature-256")
+
+    try:
+        payload = json.loads(payload_bytes.decode("utf-8")) if payload_bytes else {}
+    except Exception:
+        raise HTTPException(status_code=400, detail="Malformed JSON payload")
+
+    action = payload.get("action")
+    logger.info("Received GitHub webhook event='%s' action='%s' delivery='%s'", event_type, action, delivery_id)
+
+    if event_type == "ping":
+        return {"status": "ok", "message": "Pong! FlowMind webhook is configured correctly."}
+
+    # If it's a pull request opened/synchronized event, trigger background audit
+    if event_type == "pull_request" and action in ("opened", "synchronize", "reopened"):
+        pr_info = payload.get("pull_request", {})
+        repo_info = payload.get("repository", {})
+        clone_url = repo_info.get("clone_url")
+        full_name = repo_info.get("full_name")
+        pr_number = pr_info.get("number")
+        head_sha = pr_info.get("head", {}).get("sha")
+
+        if clone_url:
+            req = InvestigateRequest(
+                repo_path=clone_url,
+                execute_code=True,
+                dry_run=True,
+                tier="auto",
+                enable_bench_rotation=True,
+                remote_depth=50,
+            )
+            w_id = store.create(req.repo_path)
+            background_tasks.add_task(_execute_pipeline_task, w_id, req)
+            return {
+                "status": "accepted",
+                "workflow_id": w_id,
+                "event": event_type,
+                "action": action,
+                "repository": full_name,
+                "pull_request": pr_number,
+                "head_sha": head_sha,
+            }
+
+    return {"status": "received", "event": event_type, "action": action}
+
+@app.get("/v1/github/rate-limit")
+def get_github_rate_limits():
+    """Returns the authenticated GitHub user's current rate limit quotas per GitHub REST Guides."""
+    client = GitHubRestClient()
+    try:
+        limits = client.get_rate_limit()
+        user = client.get_authenticated_user() if client.token else None
+        return {
+            "api_version": client.api_version,
+            "authenticated_user": user.get("login") if user else None,
+            "rate_limits": limits.get("resources", {}),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch GitHub rate limits: {e}")
 
 def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
     import uvicorn
