@@ -168,6 +168,39 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
 
 ---
 
+## GitHub Action (GitHub Marketplace)
+
+Run FlowMind directly in your GitHub Actions workflows to audit architectural invariants, catch circular regressions, and post executive review scorecards to pull requests:
+
+```yaml
+name: FlowMind Architectural Audit
+on:
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run FlowMind Invariant Audit
+        uses: new-world-arkitech/RepoRewards@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tier: auto
+          dry-run: true
+          fail-on-gates: true
+```
+
+---
+
 ## Quickstart & CLI Usage
 
 ### 1. Launch the Client-Facing Web Dashboard

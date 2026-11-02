@@ -1,6 +1,6 @@
 name: "FlowMind Architectural Invariant Audit & A2A Reviewer"
-description: "Autonomous Multi-Agent Repository Flow Archaeology, Architectural Invariant Verification, and A2A Bench Rotation PR Reviewer"
-author: "FlowMind Systems"
+description: "Autonomous Multi-Agent Repository Flow Archaeology, Invariant Audits, and PR Reviewer"
+author: "new-world-arkitech"
 branding:
   icon: "cpu"
   color: "purple"
@@ -46,14 +46,14 @@ runs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.12"
         cache: "pip"
 
-    - name: Install FlowMind
+    - name: Install FlowMind Engine
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -e .
+        python -m pip install "${{ github.action_path }}"
 
     - name: Run FlowMind Architectural Audit
       shell: bash
@@ -70,7 +70,7 @@ runs:
         if [ "${{ inputs.fail-on-gates }}" = "true" ]; then
           ARGS+=("--fail-on-gates")
         fi
-        python -m repo_investigator.cli "${ARGS[@]}"
+        flowmind "${ARGS[@]}"
 
     - name: Upload FlowMind HTML Executive Report
       if: always()
@@ -79,4 +79,3 @@ runs:
         name: flowmind-executive-audit-report
         path: ${{ inputs.report-html }}
         if-no-files-found: warn
-
