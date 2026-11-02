@@ -23,6 +23,22 @@ def _cleanup_git_dir(git_dir: Path):
         shutil.rmtree(git_dir, onerror=_remove_readonly)
 
 @pytest.fixture(scope="session", autouse=True)
+def isolate_test_brain(tmp_path_factory):
+    """
+    Isolates the persistent Cognitive Brain path during test sessions
+    to prevent mutating the user's local ~/.flowmind/brain.json.
+    """
+    temp_dir = tmp_path_factory.mktemp("flowmind_brain_session")
+    isolated_brain_file = temp_dir / "isolated_brain.json"
+    old_env = os.environ.get("FLOWMIND_BRAIN_PATH")
+    os.environ["FLOWMIND_BRAIN_PATH"] = str(isolated_brain_file)
+    yield isolated_brain_file
+    if old_env is not None:
+        os.environ["FLOWMIND_BRAIN_PATH"] = old_env
+    else:
+        os.environ.pop("FLOWMIND_BRAIN_PATH", None)
+
+@pytest.fixture(scope="session", autouse=True)
 def ensure_sample_repo_git():
     """
     Ensures that sample_repo has a valid git repository with commit history

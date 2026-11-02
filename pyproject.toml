@@ -8,6 +8,17 @@ version = "1.0.0"
 description = "Autonomous Multi-Agent Repository Flow Archaeology, Deliberation Council, and Reasoning Coding Agent"
 readme = "README.md"
 requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Cosmic Souls Of Sovereignty Inc.", email = "legal@cosmicsoul.org"},
+    {name = "new-world-arkitech", email = "arkitech@new-world-arkitech.dev"}
+]
+
+[project.urls]
+Homepage = "https://cosmicsoul.org"
+Developer = "https://new-world-arkitech.dev"
+Repository = "https://github.com/new-world-arkitech/RepoRewards"
+Documentation = "https://github.com/new-world-arkitech/RepoRewards#readme"
 dependencies = [
     "pydantic>=2.0.0",
     "rich>=13.0.0",

@@ -207,6 +207,12 @@ def run_cli():
         help="Custom file path for persistent Cognitive Brain knowledge base",
     )
     parser.add_argument(
+        "--export-evolution",
+        type=str,
+        default=None,
+        help="Path to export the public Model Evolution Stages Ledger markdown file (e.g. MODEL_EVOLUTION.md)",
+    )
+    parser.add_argument(
         "--model-provider",
         type=str,
         choices=["simulated", "gemma", "anthropic", "openai", "gemini", "sglang", "vllm"],
@@ -326,6 +332,10 @@ def run_cli():
     # Brain Inspection mode
     if args.repo_path in ("brain", "brain-inspect", "brain:inspect"):
         bp = Path(args.brain_path) if args.brain_path else None
+        if args.export_evolution:
+            brain = BrainManager.load_brain(brain_path=bp)
+            out_file = BrainManager.export_evolution_markdown(Path(args.export_evolution), brain=brain)
+            console.print(f"[bold green][OK] Successfully exported Model Evolution Ledger to [cyan]{out_file}[/cyan][/bold green]")
         BrainManager.print_brain_inspect(brain_path=bp)
         return
 
@@ -679,12 +689,18 @@ def run_cli():
             saved_md = SessionRetrospectiveBuilder.save_markdown(learned_report, args.save_learned)
             console.print(f"\n[bold green][OK] Exported 'What We Learned' Retrospective to:[/bold green] [cyan]{saved_md}[/cyan]")
 
-    # 10. Cognitive Brain Notification
+    # 10. Cognitive Brain Notification & Evolution Ledger Export
     if result.brain:
         console.print(
             f"[bold cyan][BRAIN][/bold cyan] Ingested session wisdom into Cognitive Brain "
             f"({len(result.brain.learned_skills)} skills, {len(result.brain.learned_rules)} rules codified and accredited)."
         )
+        if args.export_evolution:
+            out_file = BrainManager.export_evolution_markdown(Path(args.export_evolution), brain=result.brain)
+            console.print(f"[bold green][OK] Exported Model Evolution Ledger to:[/bold green] [cyan]{out_file}[/cyan]")
+    elif args.export_evolution:
+        out_file = BrainManager.export_evolution_markdown(Path(args.export_evolution))
+        console.print(f"[bold green][OK] Exported Model Evolution Ledger to:[/bold green] [cyan]{out_file}[/cyan]")
 
     console.print("\n[bold green][SUCCESS] Full Cognitive Pipeline Execution Finished Successfully.[/bold green]\n")
 

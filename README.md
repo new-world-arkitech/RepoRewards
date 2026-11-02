@@ -304,3 +304,43 @@ python -m pytest -v
   ]
 }
 ```
+
+
+---
+
+## 🧠 Public Model Evolution Ledger
+
+FlowMind operates on an **Attribution-First AI** principle: every capability leap, architectural invariant, and code transformation pattern synthesized from analyzed repositories is memorialized and accredited to the original repository owners and maintainers in a dedicated public log.
+
+See the live, version-controlled public ledger:  
+👉 **[`MODEL_EVOLUTION.md`](MODEL_EVOLUTION.md)**
+
+To inspect the model's current cognitive brain and accredited contributors in your terminal:
+```bash
+flowmind brain
+```
+
+To re-export or sync the markdown ledger:
+```bash
+flowmind brain --export-evolution MODEL_EVOLUTION.md
+```
+
+---
+
+## 📜 License & Legal Notices
+
+This project is licensed under the **MIT License** - see the [`LICENSE`](LICENSE) file for complete terms.
+
+### Corporate Ownership & Contact Information:
+- **Organization:** Cosmic Souls Of Sovereignty Inc.
+- **Maintainer:** [`@new-world-arkitech`](https://github.com/new-world-arkitech)
+- **Websites:** 
+  - [cosmicsoul.org](https://cosmicsoul.org)
+  - [new-world-arkitech.dev](https://new-world-arkitech.dev)
+- **Toll-Free Phone:** `833-3-Cosmic` (`833-326-7642`)
+- **Legal Inquiries:** [legal@cosmicsoul.org](mailto:legal@cosmicsoul.org)
+- **Technical Architecture:** [arkitech@new-world-arkitech.dev](mailto:arkitech@new-world-arkitech.dev)
+- **Headquarters / Mailing Address:**
+  > Cosmic Souls Of Sovereignty Inc.  
+  > 3723 Greenville Ave PMB 78450  
+  > Dallas, TX 75206

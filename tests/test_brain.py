@@ -217,3 +217,63 @@ def test_server_brain_endpoint(tmp_path: Path):
     evo_data = resp_evo.json()
     assert len(evo_data) == 1
     assert evo_data[0]["credited_owner"] == "Tester"
+
+    # Test evolution stages markdown endpoint
+    resp_md = client.get(f"/v1/brain/evolution/markdown?brain_path={brain_file}")
+    assert resp_md.status_code == 200
+    assert "FlowMind Cognitive Model Evolution Ledger" in resp_md.text
+    assert "Tester" in resp_md.text
+    assert "Cosmic Souls Of Sovereignty Inc." in resp_md.text
+
+def test_foundational_stages():
+    stages = BrainManager.get_foundational_stages()
+    assert len(stages) >= 4
+    owners = [s.credited_owner for s in stages]
+    assert any("Cosmic Souls Of Sovereignty Inc." in o for o in owners)
+    assert any("Google DeepMind" in o for o in owners)
+    stage_ids = [s.stage_id for s in stages]
+    assert "EVO-STAGE-001-cosmicsouls" in stage_ids
+    assert "EVO-STAGE-003-google-deepmind" in stage_ids
+
+def test_format_and_export_evolution_markdown(tmp_path: Path):
+    out_file = tmp_path / "TEST_EVOLUTION.md"
+    brain = CognitiveBrain(brain_id="EXPORT_TEST_BRAIN", current_generation=1)
+    attribution = RepositoryAttribution(
+        owner="Linus Torvalds",
+        repo_name="linux",
+        remote_url="https://github.com/torvalds/linux",
+        top_contributors=["Linus Torvalds"],
+        license_type="GPL-2.0",
+        attribution_statement="Monolithic kernel synchronization primitives.",
+        ingested_at="2026-01-01T00:00:00Z",
+    )
+    brain.evolution_stages.append(
+        ModelEvolutionStage(
+            stage_id="EVO-STAGE-005-Linus",
+            stage_number=5,
+            model_version="FlowMind-v1.5.0-cognitive",
+            timestamp="2026-02-01T00:00:00Z",
+            credited_owner="Linus Torvalds",
+            credited_repo="torvalds/linux",
+            license_type="GPL-2.0",
+            capability_unlocked="Read-Copy-Update (RCU) Concurrency Pattern",
+            stage_description="Synthesized lockless RCU synchronization structures.",
+            skills_gained=["rcu_read_lock enforcement"],
+            rules_codified=["Never block inside RCU read-side critical section"],
+            heuristics_learned=["Prefer RCU for read-heavy cache validation"],
+            attribution_statement="Officially credited to Linus Torvalds",
+        )
+    )
+
+    exported_path = BrainManager.export_evolution_markdown(out_file, brain=brain)
+    assert exported_path.exists()
+    content = exported_path.read_text(encoding="utf-8")
+
+    assert "# 🧠 FlowMind Cognitive Model Evolution Ledger" in content
+    assert "Cosmic Souls Of Sovereignty Inc." in content
+    assert "Linus Torvalds" in content
+    assert "torvalds/linux" in content
+    assert "Read-Copy-Update (RCU) Concurrency Pattern" in content
+    assert "rcu_read_lock enforcement" in content
+    assert "| `EVO-STAGE-001-cosmicsouls`" in content
+

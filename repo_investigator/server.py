@@ -11,7 +11,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 
 from repo_investigator.orchestrator import FlowMindOrchestrator, PipelineResult
@@ -310,6 +310,15 @@ def get_cognitive_brain_evolution(brain_path: Optional[str] = Query(None, descri
     bp = Path(brain_path) if brain_path else None
     brain = BrainManager.load_brain(bp)
     return brain.evolution_stages
+
+@app.get("/v1/brain/evolution/markdown", response_class=PlainTextResponse)
+def get_cognitive_brain_evolution_markdown(brain_path: Optional[str] = Query(None, description="Custom path to brain.json")):
+    """
+    Renders and streams the public FlowMind Model Evolution Stages Ledger as GitHub Flavored Markdown.
+    """
+    bp = Path(brain_path) if brain_path else None
+    brain = BrainManager.load_brain(bp)
+    return BrainManager.format_evolution_markdown(brain)
 
 @app.post("/v1/webhooks/github")
 async def github_webhook_endpoint(request: Request, background_tasks: BackgroundTasks):
