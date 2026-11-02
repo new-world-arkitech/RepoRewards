@@ -42,9 +42,12 @@ def ensure_sample_repo_git():
 
 def _init_sample_git_repo(sample_dir: Path):
     try:
+        # Trust directory boundary in CI environments
+        subprocess.run(["git", "config", "--global", "--add", "safe.directory", "*"], capture_output=True)
         subprocess.run(["git", "init"], cwd=sample_dir, capture_output=True, check=True)
         subprocess.run(["git", "config", "user.name", "Dev Alice"], cwd=sample_dir, capture_output=True, check=True)
         subprocess.run(["git", "config", "user.email", "alice@example.com"], cwd=sample_dir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=sample_dir, capture_output=True)
 
         rewards_file = sample_dir / "rewards_processor.py"
         full_content = rewards_file.read_text(encoding="utf-8") if rewards_file.exists() else ""
@@ -66,6 +69,5 @@ def _init_sample_git_repo(sample_dir: Path):
         # Commit 4: refactor / decoupling (restoring full file)
         rewards_file.write_text(full_content, encoding="utf-8")
         subprocess.run(["git", "commit", "-am", "refactor: explore decoupling storage adapter from core calculation"], cwd=sample_dir, capture_output=True, check=True)
-    except Exception:
-        # Non-fatal if git is unavailable in the environment
-        pass
+    except Exception as e:
+        print(f"Warning: Failed to initialize sample_repo git fixture: {e}")

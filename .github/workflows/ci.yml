@@ -20,6 +20,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Configure Git Runner Identity
+        run: |
+          git config --global user.name "FlowMind CI Runner"
+          git config --global user.email "ci@flowmind.dev"
+          git config --global init.defaultBranch main
+          git config --global --add safe.directory "*"
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -29,8 +36,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -e .
-          python -m pip install pytest
+          python -m pip install -e ".[all]"
+          python -m pip install pytest httpx
 
       - name: Run Test Suite
         run: |
@@ -60,4 +67,3 @@ jobs:
         with:
           name: flowmind-dist
           path: dist/*
-
