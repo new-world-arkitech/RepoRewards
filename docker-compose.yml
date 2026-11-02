@@ -1,0 +1,68 @@
+services:
+  # FlowMind Autonomous Cognitive Engine
+  flowmind-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowmind-worker
+    environment:
+      - FLOWMIND_STATE_BUS_BACKEND=redis
+      - FLOWMIND_REDIS_URL=redis://redis:6379/0
+      - FLOWMIND_NATS_URL=nats://nats:4222
+      - FLOWMIND_TELEMETRY_SINK=opentelemetry
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    volumes:
+      - ./sample_repo:/workspace/sample_repo:rw
+    command: ["/workspace/sample_repo", "--dry-run", "--tier", "3", "--output-state-bus", "/workspace/sample_repo/state_bus.json"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      jaeger:
+        condition: service_started
+    networks:
+      - flowmind-net
+
+  # Enterprise Canonical State Bus Storage (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: flowmind-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - flowmind-net
+
+  # Distributed NATS JetStream State Bus Message Broker
+  nats:
+    image: nats:2.10-alpine
+    container_name: flowmind-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-js", "-m", "8222"]
+    networks:
+      - flowmind-net
+
+  # OpenTelemetry Tracing Collector (Jaeger)
+  jaeger:
+    image: jaegertracing/all-in-one:1.55
+    container_name: flowmind-jaeger
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317"   # OTLP gRPC receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - flowmind-net
+
+networks:
+  flowmind-net:
+    driver: bridge
+

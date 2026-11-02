@@ -1,0 +1,162 @@
+# ==============================================================================
+# FLOWMIND PRODUCTION GITIGNORE
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Byte-compiled / Optimized / Native Artifacts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+*.dylib
+
+# ------------------------------------------------------------------------------
+# 2. Package Builds, Distributions & Wheels
+# ------------------------------------------------------------------------------
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ------------------------------------------------------------------------------
+# 3. Virtual Environments
+# ------------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+.direnv/
+
+# ------------------------------------------------------------------------------
+# 4. Secrets, Credentials & Environment Variables
+# ------------------------------------------------------------------------------
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# ------------------------------------------------------------------------------
+# 5. Testing, Linting & Type Checking
+# ------------------------------------------------------------------------------
+.cache
+.pytest_cache/
+.pytest_temp/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+coverage.xml
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# ------------------------------------------------------------------------------
+# 6. FlowMind Local Cache, Runtime Artifacts & Sandboxes
+# ------------------------------------------------------------------------------
+# Persistent Cognitive Brain local state (kept per-user in ~/.flowmind/ or scratch)
+.flowmind/
+brain.json
+*.brain.json
+test_brain.json
+session_brain.json
+api_brain.json
+
+# Local runtime execution specs, ledgers & retrospectives
+state_bus.json
+output_spec.json
+flowmind_state_bus.json
+what_we_learned.md
+sample_what_we_learned.md
+
+# Remote Git Ingestion temporary clone directories
+.flowmind_temp_repos/
+tmp_repo_*
+sample_repo/.git/
+
+# Generated HTML reports (unless deliberately committed under docs/)
+*.html
+!docs/**/*.html
+
+# ------------------------------------------------------------------------------
+# 7. IDE, Editor & OS Files
+# ------------------------------------------------------------------------------
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains PyCharm / IntelliJ
+.idea/
+*.iws
+*.iml
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+.#*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# ------------------------------------------------------------------------------
+# 8. Logs & Databases
+# ------------------------------------------------------------------------------
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+*.sqlite
+*.sqlite3
+*.db

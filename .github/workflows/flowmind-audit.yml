@@ -1,0 +1,52 @@
+name: FlowMind Architectural Invariant Audit & PR Reviewer
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  audit-invariants:
+    name: Autonomous Multi-Agent Architectural Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code with Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install FlowMind Engine
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Execute FlowMind Invariant Audit & Post Scorecard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m repo_investigator.cli . \
+            --tier auto \
+            --dry-run \
+            --report-html flowmind-report.html \
+            --post-pr-comment \
+            --fail-on-gates
+
+      - name: Upload HTML Executive Architecture Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowmind-architecture-report
+          path: flowmind-report.html
+          if-no-files-found: warn
+

@@ -1,0 +1,82 @@
+name: "FlowMind Architectural Invariant Audit & A2A Reviewer"
+description: "Autonomous Multi-Agent Repository Flow Archaeology, Architectural Invariant Verification, and A2A Bench Rotation PR Reviewer"
+author: "FlowMind Systems"
+branding:
+  icon: "cpu"
+  color: "purple"
+
+inputs:
+  repo-path:
+    description: "Path to repository to scan and audit"
+    required: false
+    default: "."
+  tier:
+    description: "Execution tier: auto, 1, 2, or 3"
+    required: false
+    default: "auto"
+  dry-run:
+    description: "Execute reasoning loop without modifying files on disk"
+    required: false
+    default: "true"
+  report-html:
+    description: "Path to generate the client-facing interactive HTML report"
+    required: false
+    default: "flowmind-report.html"
+  post-pr-comment:
+    description: "Post architectural audit scorecard as a comment to GitHub Pull Request"
+    required: false
+    default: "true"
+  fail-on-gates:
+    description: "Fail the workflow if any architectural invariant gates fail"
+    required: false
+    default: "true"
+  github-token:
+    description: "GitHub token used for posting PR comments"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  report-path:
+    description: "Path to generated HTML report artifact"
+    value: ${{ inputs.report-html }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: "pip"
+
+    - name: Install FlowMind
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e .
+
+    - name: Run FlowMind Architectural Audit
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        ARGS=("${{ inputs.repo-path }}" "--tier" "${{ inputs.tier }}" "--report-html" "${{ inputs.report-html }}")
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          ARGS+=("--dry-run")
+        fi
+        if [ "${{ inputs.post-pr-comment }}" = "true" ]; then
+          ARGS+=("--post-pr-comment")
+        fi
+        if [ "${{ inputs.fail-on-gates }}" = "true" ]; then
+          ARGS+=("--fail-on-gates")
+        fi
+        python -m repo_investigator.cli "${ARGS[@]}"
+
+    - name: Upload FlowMind HTML Executive Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: flowmind-executive-audit-report
+        path: ${{ inputs.report-html }}
+        if-no-files-found: warn
+
