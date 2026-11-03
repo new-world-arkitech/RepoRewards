@@ -161,3 +161,4 @@ def test_investigators_emit_advanced_cognitive_insights():
     intent_inv = DeveloperIntentInvestigator()
     intent_finding = intent_inv.investigate(archaeology)
     assert intent_finding.investigator_name.startswith("Elena")
+
