@@ -99,28 +99,75 @@ class GitArchaeologyExtractor:
     def calculate_churn_hotspots(self, commits: List[CommitRecord]) -> List[ChurnHotspot]:
         """
         Identifies files that undergo disproportionate modification,
-        indicating cognitive friction or architectural instability.
+        computing Shannon Author Entropy and detecting firefighting bursts.
         """
+        import math
+        from collections import defaultdict
+        from datetime import datetime
+
         churn_counts: Dict[str, int] = {}
+        file_authors: Dict[str, List[str]] = defaultdict(list)
+        file_commits: Dict[str, List[CommitRecord]] = defaultdict(list)
+
         for c in commits:
             for f in c.files_changed:
                 churn_counts[f] = churn_counts.get(f, 0) + 1
+                file_authors[f].append(c.author)
+                file_commits[f].append(c)
 
         hotspots: List[ChurnHotspot] = []
         total_commits = max(len(commits), 1)
 
         for file_path, count in churn_counts.items():
-            # Higher churn ratio indicates architectural hotspot
-            risk_score = round(min(count / total_commits * 10.0, 10.0), 2)
+            authors = file_authors[file_path]
+            unique_authors = set(authors)
+            total_touches = len(authors)
+
+            # 1. Compute Shannon Author Entropy (H_author)
+            entropy = 0.0
+            if total_touches > 0:
+                for a in unique_authors:
+                    p = authors.count(a) / total_touches
+                    if p > 0:
+                        entropy -= p * math.log2(p)
+
+            # 2. Detect Firefighting Bursts (Rapid succession of bug fixes / hacks)
+            fc = file_commits[file_path]
+            has_burst = False
+            bug_fixes = [
+                c for c in fc
+                if any(t in c.intent_tags for t in ("BUG_FIX", "HACK_OR_WORKAROUND", "RACE_OR_CONCURRENCY"))
+            ]
+            if len(bug_fixes) >= 2:
+                try:
+                    dates = [datetime.fromisoformat(c.date.replace("Z", "+00:00")) for c in bug_fixes if c.date]
+                    dates.sort()
+                    for i in range(len(dates) - 1):
+                        delta_hours = abs((dates[i+1] - dates[i]).total_seconds()) / 3600.0
+                        if delta_hours <= 72.0:
+                            has_burst = True
+                            break
+                except Exception:
+                    has_burst = True
+
+            # Calculate enriched risk score (volume ratio + entropy penalty + burst penalty)
+            base_risk = min(count / total_commits * 10.0, 10.0)
+            entropy_penalty = min(entropy * 0.75, 2.0)
+            burst_penalty = 1.5 if has_burst else 0.0
+            total_risk = round(min(base_risk + entropy_penalty + burst_penalty, 10.0), 2)
+
             hotspots.append(
                 ChurnHotspot(
                     file_path=file_path,
                     modification_count=count,
-                    risk_score=risk_score
+                    risk_score=total_risk,
+                    author_entropy=round(entropy, 2),
+                    author_count=len(unique_authors),
+                    has_firefighting_burst=has_burst,
                 )
             )
 
-        hotspots.sort(key=lambda h: h.modification_count, reverse=True)
+        hotspots.sort(key=lambda h: (h.risk_score, h.modification_count), reverse=True)
         return hotspots
 
     def _fallback_synthetic_commits(self) -> List[CommitRecord]:

@@ -445,15 +445,22 @@ def run_cli():
     scan_table.add_row("Dependency Cycles", str(len(arch.detected_cycles)))
     hubs_str = ", ".join(arch.architectural_signals.get("architectural_hubs", [])) or "None (Decoupled)"
     scan_table.add_row("Central Architectural Hubs", hubs_str)
+    zop_str = ", ".join(arch.architectural_signals.get("zone_of_pain_modules", [])) or "None (Balanced)"
+    scan_table.add_row("Zone of Pain Modules (I<0.35, A<0.25)", zop_str)
+    scan_table.add_row("Layer Boundary Inversions", str(len(arch.architectural_signals.get("layer_boundary_inversions", []))))
+    scan_table.add_row("In-Code Cognitive Markers", str(arch.architectural_signals.get("total_in_code_cognitive_markers", 0)))
     console.print(scan_table)
 
     if arch.churn_hotspots:
-        churn_table = Table(title="Cognitive Churn Hotspots (Historical Friction)", border_style="red")
+        churn_table = Table(title="Cognitive Churn Hotspots & Author Entropy (Conway Dissonance)", border_style="red")
         churn_table.add_column("File Path", style="yellow")
-        churn_table.add_column("Modifications", style="white")
-        churn_table.add_column("Risk Index", style="bold red")
+        churn_table.add_column("Touches", style="white", justify="right")
+        churn_table.add_column("Risk Index", style="bold red", justify="right")
+        churn_table.add_column("Author Entropy (H)", style="cyan", justify="right")
+        churn_table.add_column("Firefighting Spiral", style="magenta")
         for h in arch.churn_hotspots[:5]:
-            churn_table.add_row(h.file_path, str(h.modification_count), f"{h.risk_score}/10")
+            burst_desc = "[bold red]DETECTED (<=72h)[/bold red]" if h.has_firefighting_burst else "[green]Nominal[/green]"
+            churn_table.add_row(h.file_path, str(h.modification_count), f"{h.risk_score}/10", f"{h.author_entropy:.2f} ({h.author_count} devs)", burst_desc)
         console.print(churn_table)
 
     # 2. Display Investigator Findings

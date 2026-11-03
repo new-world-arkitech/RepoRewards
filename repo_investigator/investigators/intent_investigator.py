@@ -22,21 +22,62 @@ class DeveloperIntentInvestigator(BaseInvestigator):
         insights: List[InvestigatorInsight] = []
         friction_points: List[str] = []
 
-        # 1. Analyze Churn Hotspots
+        # 1. Analyze Churn Hotspots, Author Entropy & Conway's Law Dissonance
         top_churn = archaeology.churn_hotspots[:3]
         if top_churn:
-            churn_desc = ", ".join(f"{h.file_path} ({h.modification_count} touches, risk {h.risk_score})" for h in top_churn)
+            churn_desc = ", ".join(f"{h.file_path} ({h.modification_count} touches, risk {h.risk_score}, H_author {h.author_entropy})" for h in top_churn)
             insights.append(
                 InvestigatorInsight(
                     category="CHURN_COGNITIVE_FRICTION",
                     observation=f"Primary cognitive friction localized in churn hotspots: {churn_desc}",
                     evidence=f"Files modified repeatedly across historical commit progression.",
                     confidence=0.96,
-                    implication="High-churn files reflect unresolved design ambiguity or unstable domain interfaces."
+                    implication="High-churn files reflect unresolved design ambiguity, Conway's law author divergence, or unstable domain interfaces."
                 )
             )
             for h in top_churn:
-                friction_points.append(f"Hotspot file {h.file_path} repeatedly revised ({h.modification_count} times)")
+                friction_points.append(f"Hotspot file {h.file_path} repeatedly revised ({h.modification_count} times, H_author={h.author_entropy})")
+                if h.author_entropy > 1.2 or h.author_count >= 3:
+                    insights.append(
+                        InvestigatorInsight(
+                            category="CONWAY_AUTHOR_DISSONANCE",
+                            observation=f"Elevated author entropy (H={h.author_entropy}, {h.author_count} authors) on '{h.file_path}'.",
+                            evidence=f"Commits originated from multiple distinct contributors without a single unified mental model.",
+                            confidence=0.91,
+                            implication="Fragmented code ownership induces stylistic drift and conflicting architectural conventions."
+                        )
+                    )
+                if h.has_firefighting_burst:
+                    insights.append(
+                        InvestigatorInsight(
+                            category="RAPID_FIREFIGHTING_SPIRAL",
+                            observation=f"Temporal firefighting burst detected on '{h.file_path}'.",
+                            evidence="Rapid cluster of consecutive bug fixes/patches committed within short chronological intervals.",
+                            confidence=0.93,
+                            implication="Emergency patches were deployed in reaction to regressions, signaling tight coupling and hidden side-effects."
+                        )
+                    )
+
+        # 2. Extract In-Code Cognitive Debt & Compromise Markers (AST-Level)
+        all_markers = [
+            m for mod in archaeology.modules.values()
+            for m in mod.cognitive_markers
+        ]
+        if all_markers:
+            todo_count = sum(1 for m in all_markers if m.category in ("TODO", "FIXME"))
+            hack_count = sum(1 for m in all_markers if m.category in ("HACK", "WORKAROUND", "BUG", "TEMP"))
+            caution_count = sum(1 for m in all_markers if m.category in ("CAUTION", "DEPRECATED"))
+            sample_marker = all_markers[0]
+            insights.append(
+                InvestigatorInsight(
+                    category="IN_CODE_COGNITIVE_DEBT",
+                    observation=f"Discovered {len(all_markers)} in-code cognitive debt markers ({todo_count} TODOs, {hack_count} Workarounds, {caution_count} Cautions).",
+                    evidence=f"Direct developer annotation at {sample_marker.file_path}:{sample_marker.line_number}: '{sample_marker.text}'",
+                    confidence=0.97,
+                    implication="Developers embedded explicit cautionary notes where existing abstractions failed to accommodate requirements."
+                )
+            )
+            friction_points.append(f"In-code compromise marker at {sample_marker.file_path}:{sample_marker.line_number} ('{sample_marker.text}')")
 
         # 2. Extract Developer Cognitive Signals from Commits
         hacks = [c for c in archaeology.commits if "HACK_OR_WORKAROUND" in c.intent_tags]

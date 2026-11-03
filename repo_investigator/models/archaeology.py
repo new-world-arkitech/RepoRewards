@@ -20,6 +20,24 @@ class ChurnHotspot(BaseModel):
     insertions: int = 0
     deletions: int = 0
     risk_score: float = 0.0
+    author_entropy: float = 0.0
+    author_count: int = 1
+    has_firefighting_burst: bool = False
+
+class InCodeCognitiveMarker(BaseModel):
+    category: str  # "TODO", "FIXME", "HACK", "WORKAROUND", "CAUTION", "DEPRECATED"
+    text: str
+    line_number: int
+    file_path: str
+
+class MartinPackageMetrics(BaseModel):
+    afferent_coupling: int = 0  # Ca: incoming dependencies (modules depending on this)
+    efferent_coupling: int = 0  # Ce: outgoing dependencies (modules this depends on)
+    instability: float = 0.0    # I = Ce / (Ca + Ce)
+    abstractness: float = 0.0   # A = abstract_classes / total_classes
+    distance_from_main_sequence: float = 0.0  # D = |A + I - 1|
+    in_zone_of_pain: bool = False
+    in_zone_of_uselessness: bool = False
 
 class ASTFunction(BaseModel):
     name: str
@@ -48,6 +66,10 @@ class ASTModule(BaseModel):
     classes: List[ASTClass] = Field(default_factory=list)
     functions: List[ASTFunction] = Field(default_factory=list)
     total_lines: int = 0
+    architectural_layer: str = "UNCLASSIFIED"  # "INGRESS", "APPLICATION", "DOMAIN", "INFRASTRUCTURE"
+    cognitive_markers: List[InCodeCognitiveMarker] = Field(default_factory=list)
+    cognitive_friction_density: float = 0.0
+    package_metrics: Optional[MartinPackageMetrics] = None
 
 class CallGraphEdge(BaseModel):
     source: str

@@ -58,7 +58,12 @@ flowchart TD
 
 1. **Repository Archaeology & Cognitive Ingestion**:
    - Mines Git commit genealogies, intent tags (`HACK`, `WORKAROUND`, `BUG_FIX`, `REFACTOR`), and churn hotspots.
-   - Parses ASTs across Python modules and builds directed call & dependency graphs using NetworkX.
+   - Computes **Shannon Author Entropy ($H_{\text{author}}$)** to identify Conway's Law mental model dissonance across multiple contributors.
+   - Detects **Temporal Firefighting Spirals** (rapid bug-fix clusters committed within 72-hour windows).
+   - Scans in-code cognitive markers (`TODO`, `FIXME`, `HACK`, `XXX`, `WORKAROUND`, `CAUTION`, `@deprecated`) and computes per-file **Cognitive Friction Density ($\rho_{\text{friction}}$)**.
+   - Builds directed AST dependency and call graphs using NetworkX.
+   - Computes **Robert C. Martin Package Metrics** (Afferent $C_a$, Efferent $C_e$, Instability $I$, Abstractness $A$, Distance $D$) and flags **Zone of Pain** concrete modules.
+   - Automatically classifies modules into architectural tiers (Ingress $\to$ Application $\to$ Domain $\to$ Infrastructure) and flags **Inverted Layer Boundary Leaks**.
 2. **Specialized Investigative Personas**:
    - **Dr. Aris Vance**: Analyzes component topology, fan-in/fan-out, dataflow pipelines, and synchronous bottlenecks.
    - **Elena Rostova**: Reconstructs developer mental models, evolutionary pivots, and cognitive compromises.

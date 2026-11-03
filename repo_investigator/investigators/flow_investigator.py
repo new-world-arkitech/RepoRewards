@@ -46,7 +46,7 @@ class FlowTopologyInvestigator(BaseInvestigator):
                 )
             )
 
-        # 2. Inspect central hubs (bottlenecks)
+        # 2. Inspect central hubs & Robert C. Martin Stability Metrics
         hubs = archaeology.architectural_signals.get("architectural_hubs", [])
         if hubs:
             insights.append(
@@ -59,6 +59,37 @@ class FlowTopologyInvestigator(BaseInvestigator):
                 )
             )
             friction_points.append(f"High-fan-in hub modules: {', '.join(hubs)}")
+
+        # 3. Zone of Pain (Rigid Concrete Modules) & Package Metrics
+        zop_modules = archaeology.architectural_signals.get("zone_of_pain_modules", [])
+        if zop_modules:
+            insights.append(
+                InvestigatorInsight(
+                    category="ZONE_OF_PAIN_RIGIDITY",
+                    observation=f"Identified {len(zop_modules)} module(s) in Robert C. Martin's 'Zone of Pain': {', '.join(zop_modules[:3])}",
+                    evidence="Modules exhibit low instability (I < 0.35) and low abstraction (A < 0.25) under heavy afferent load.",
+                    confidence=0.96,
+                    implication="These concrete classes are rigid and heavily depended on; modifying them causes cascading regressions."
+                )
+            )
+            for zm in zop_modules:
+                friction_points.append(f"Zone of Pain module: {zm} (concrete, rigid, high afferent coupling)")
+
+        # 4. Inverted Architectural Layer Boundary Leaks
+        layer_leaks = archaeology.architectural_signals.get("layer_boundary_inversions", [])
+        if layer_leaks:
+            sample_leak = layer_leaks[0]
+            insights.append(
+                InvestigatorInsight(
+                    category="INVARIANT_LAYER_BOUNDARY_BREACH",
+                    observation=f"Detected {len(layer_leaks)} inverted architectural layer boundary violation(s).",
+                    evidence=f"Violation: {sample_leak.get('violation')}",
+                    confidence=0.97,
+                    implication="Lower-layer domain logic directly couples to concrete infrastructure adapters or ingress entrypoints."
+                )
+            )
+            for lk in layer_leaks[:3]:
+                friction_points.append(f"Layer Boundary Leak: {lk.get('violation')}")
 
         # 3. Analyze Call Graph Flow
         total_calls = len(archaeology.call_graph_edges)
