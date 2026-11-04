@@ -13,6 +13,7 @@ from repo_investigator.extractor.repo_loader import (
     is_git_remote_url,
     clone_remote_repo,
     cleanup_repo_dir,
+    resolve_repo_target,
 )
 from repo_investigator.investigators import (
     FlowTopologyInvestigator,
@@ -41,6 +42,7 @@ class PipelineResult(BaseModel):
     execution_tier: Optional[str] = None
     state_bus: Optional[CanonicalStateBus] = None
     brain: Optional[CognitiveBrain] = None
+    repo_name: Optional[str] = None
 
 class FlowMindOrchestrator:
     """
@@ -83,15 +85,20 @@ class FlowMindOrchestrator:
         repo_str = str(repo_path)
         cloned_temp_dir: Optional[Path] = None
 
-        if is_git_remote_url(repo_str):
+        resolved_target, derived_name, derived_owner = resolve_repo_target(repo_str)
+        effective_owner = repo_owner or derived_owner
+
+        if is_git_remote_url(resolved_target):
             cloned_temp_dir = clone_remote_repo(
-                url=repo_str,
+                url=resolved_target,
                 depth=remote_depth,
                 branch=remote_branch,
             )
             repo_dir = cloned_temp_dir
         else:
-            repo_dir = Path(repo_path).resolve()
+            repo_dir = Path(resolved_target).resolve()
+
+        canonical_repo_name = derived_name or repo_dir.name or "repository"
 
         chosen_tier = tier or self.default_tier
 
@@ -109,7 +116,7 @@ class FlowMindOrchestrator:
             ]
 
             # Step 3: Deliberation Council (Group Reasoning Session)
-            repo_name = repo_dir.name or "repository"
+            repo_name = canonical_repo_name
             hubs = archaeology.architectural_signals.get("architectural_hubs", [])
             has_cycles = len(archaeology.detected_cycles) > 0
             has_churn = len(archaeology.churn_hotspots) > 0
@@ -178,6 +185,7 @@ class FlowMindOrchestrator:
                 execution_report=execution_report,
                 execution_tier=final_tier_str,
                 state_bus=state_bus_snapshot,
+                repo_name=canonical_repo_name,
             )
 
             # Ingest session knowledge into persistent, attributed Cognitive Brain
@@ -185,7 +193,7 @@ class FlowMindOrchestrator:
                 brain_snapshot = BrainManager.ingest_session(
                     result=result,
                     repo_path=repo_dir,
-                    owner_override=repo_owner,
+                    owner_override=effective_owner,
                     brain_path=brain_path,
                 )
                 result.brain = brain_snapshot

@@ -23,7 +23,7 @@ from rich.text import Text
 from repo_investigator.orchestrator import FlowMindOrchestrator
 from repo_investigator.translator.command_compiler import CommandCompiler
 from repo_investigator.bench_rotation.models import ExecutionTier
-from repo_investigator.extractor.repo_loader import is_git_remote_url
+from repo_investigator.extractor.repo_loader import is_git_remote_url, resolve_repo_target
 from repo_investigator.reports.html_reporter import HTMLReportGenerator
 from repo_investigator.integrations.github import (
     GITHUB_API_VERSION,
@@ -381,13 +381,22 @@ def run_cli():
         run_server(host=args.host, port=args.port)
         return
 
-    # Ingestion target resolution: Remote Git URL or Local Path
-    is_remote = is_git_remote_url(args.repo_path)
+    # Ingestion target resolution: Remote Git URL, GitHub Profile URL, or Local Path
+    resolved_target, derived_name, derived_owner = resolve_repo_target(args.repo_path)
+    if derived_owner and not args.repo_owner:
+        args.repo_owner = derived_owner
+    if derived_name and derived_name != Path(args.repo_path).name:
+        console.print(
+            f"[bold cyan]>> Auto-resolved GitHub profile to primary repository:[/bold cyan] "
+            f"[yellow]{derived_name}[/yellow] ([green]{resolved_target}[/green])"
+        )
+
+    is_remote = is_git_remote_url(resolved_target)
     if is_remote:
-        target_display = args.repo_path
-        target_path = args.repo_path
+        target_display = resolved_target
+        target_path = resolved_target
     else:
-        target_path = Path(args.repo_path).resolve()
+        target_path = Path(resolved_target).resolve()
         target_display = str(target_path)
         if not target_path.exists():
             console.print(f"[bold red]Error:[/bold red] Target path does not exist: [yellow]{target_path}[/yellow]")
@@ -668,13 +677,13 @@ def run_cli():
             console.print(f"[bold green][OK] Saved State Bus JSON to:[/bold green] {out_p}")
 
     if args.report_html:
-        repo_name = Path(args.repo_path).name or "Repository"
+        repo_name = getattr(result, "repo_name", None) or derived_name or Path(args.repo_path).name or "Repository"
         html_file = HTMLReportGenerator.save_report(result, args.report_html, repo_name=repo_name)
         console.print(f"\n[bold green][OK] Saved Client-Facing Interactive HTML Report to:[/bold green] [cyan]{html_file}[/cyan]")
 
     # 7. Post PR Comment if requested
     if args.post_pr_comment:
-        repo_name = Path(args.repo_path).name or "Repository"
+        repo_name = getattr(result, "repo_name", None) or derived_name or Path(args.repo_path).name or "Repository"
         posted = post_pr_comment(
             result=result,
             token=args.github_token,

@@ -90,7 +90,8 @@ class BrainManager:
                     ["git", "config", "--get", "remote.origin.url"],
                     cwd=repo_dir,
                     capture_output=True,
-                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     check=False,
                     timeout=5,
                 )
@@ -99,8 +100,9 @@ class BrainManager:
                     remote_url = raw_url
                     # Match github.com/owner/repo or git@github.com:owner/repo
                     m = re.search(r"github\.com[:/]([a-zA-Z0-9._-]+)/([a-zA-Z0-9._-]+)", raw_url)
-                    if m and not owner:
-                        owner = m.group(1)
+                    if m:
+                        if not owner:
+                            owner = m.group(1)
                         repo_name = m.group(2).removesuffix(".git")
             except Exception:
                 pass

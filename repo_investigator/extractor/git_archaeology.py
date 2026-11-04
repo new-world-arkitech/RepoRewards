@@ -45,7 +45,14 @@ class GitArchaeologyExtractor:
         ]
 
         try:
-            res = subprocess.run(cmd, cwd=self.repo_dir, capture_output=True, text=True, check=True)
+            res = subprocess.run(
+                cmd,
+                cwd=self.repo_dir,
+                capture_output=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            )
             output = res.stdout
         except Exception:
             return self._fallback_synthetic_commits()

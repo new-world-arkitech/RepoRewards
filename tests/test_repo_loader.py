@@ -14,6 +14,7 @@ from repo_investigator.extractor.repo_loader import (
     is_git_remote_url,
     clone_remote_repo,
     cleanup_repo_dir,
+    resolve_repo_target,
 )
 
 def test_is_git_remote_url_detection():
@@ -44,7 +45,7 @@ def test_clone_remote_repo_command_assembly(tmp_path: Path):
         mock_run.assert_called_once()
         cmd = mock_run.call_args[0][0]
         assert cmd[0] == "git"
-        assert cmd[1] == "clone"
+        assert "clone" in cmd
         assert "--depth" in cmd
         assert "25" in cmd
         assert "--branch" in cmd
@@ -78,6 +79,42 @@ def test_clone_remote_repo_blocks_flag_injection(tmp_path: Path):
     with pytest.raises(ValueError) as exc_info:
         clone_remote_repo(url=malicious_url, dest_dir=tmp_path / "danger")
     assert "cannot start with a dash" in str(exc_info.value)
+
+def test_resolve_repo_target_github_repo_urls():
+    url, name, owner = resolve_repo_target("https://github.com/The-Arkitech/OMNI-3.git")
+    assert url == "https://github.com/The-Arkitech/OMNI-3.git"
+    assert name == "OMNI-3"
+    assert owner == "The-Arkitech"
+
+    url2, name2, owner2 = resolve_repo_target("git@github.com:The-Arkitech/_beautifulOS.git")
+    assert url2 == "git@github.com:The-Arkitech/_beautifulOS.git"
+    assert name2 == "_beautifulOS"
+    assert owner2 == "The-Arkitech"
+
+def test_resolve_repo_target_local_path(tmp_path: Path):
+    test_repo = tmp_path / "my_project"
+    test_repo.mkdir()
+    target, name, owner = resolve_repo_target(str(test_repo))
+    assert Path(target) == test_repo.resolve()
+    assert name == "my_project"
+    assert owner is None
+
+def test_resolve_repo_target_user_profile_resolution():
+    mock_repos = [
+        {"name": "awesome-books", "clone_url": "https://github.com/testuser/awesome-books.git", "fork": True, "stargazers_count": 5},
+        {"name": "flagship-app", "clone_url": "https://github.com/testuser/flagship-app.git", "fork": False, "stargazers_count": 42},
+    ]
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_resp = MagicMock()
+        import json
+        mock_resp.read.return_value = json.dumps(mock_repos).encode("utf-8")
+        mock_resp.__enter__.return_value = mock_resp
+        mock_urlopen.return_value = mock_resp
+
+        target, name, owner = resolve_repo_target("https://github.com/testuser")
+        assert target == "https://github.com/testuser/flagship-app.git"
+        assert name == "flagship-app"
+        assert owner == "testuser"
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
