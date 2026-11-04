@@ -139,10 +139,25 @@ allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()] if cors_
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_cors_and_pna_headers(request: Request, call_next):
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        res = Response(status_code=204)
+        res.headers["Access-Control-Allow-Origin"] = "*"
+        res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        res.headers["Access-Control-Allow-Headers"] = "*"
+        res.headers["Access-Control-Allow-Private-Network"] = "true"
+        return res
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
 
 def _execute_pipeline_task(workflow_id: str, req: InvestigateRequest):
     store.update_status(workflow_id, "RUNNING")
