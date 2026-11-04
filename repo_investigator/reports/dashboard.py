@@ -398,8 +398,8 @@ def render_dashboard_html() -> str:
     <header>
         <div class="header-wrap">
             <a href="/" class="brand">
-                <span class="brand-logo">🧠 FlowMind</span>
-                <span class="brand-badge">COCKPIT</span>
+                <span class="brand-logo">🧠 FLOWMIND</span>
+                <span class="brand-badge">CLIENT DASHBOARD</span>
             </a>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="model-pill">
