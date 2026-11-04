@@ -14,3 +14,4 @@ WORKFLOW_ID = "flowmind-audit.yml"
 # - GITHUB_WEBHOOK_SECRET: Secret shared with GitHub App / Webhook settings
 # - GITHUB_TOKEN: GitHub Fine-Grained Personal Access Token (or App Installation Token)
 # - FLOWMIND_BACKEND_URL: (Optional) URL of your local/hosted FlowMind FastAPI server
+

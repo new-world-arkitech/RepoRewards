@@ -205,9 +205,9 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
     <button class="btn" id="ciBtn">Copy CI workflow</button>
   </div>
   <dl class="stats">
-    <div><dt>179</dt><dd>Evolution Stages</dd></div>
-    <div><dt>90+</dt><dd>Codified invariants</dd></div>
-    <div><dt>32+</dt><dd>Repositories credited</dd></div>
+    <div><dt>180</dt><dd>Evolution Stages</dd></div>
+    <div><dt>93+</dt><dd>Codified invariants</dd></div>
+    <div><dt>33+</dt><dd>Repositories credited</dd></div>
     <div><dt>4</dt><dd>Model carriers: Gemma, Claude, GPT, Gemini</dd></div>
     <div><dt>~28 ms</dt><dd>Stint rollback</dd></div>
   </dl>
@@ -514,6 +514,14 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">kubernetes/kubernetes: 128k+ stars. Production-grade container scheduling engine, client-go packages, and decoupled controllers.</p>
       <a href="audits/kubernetes_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
     </div>
+    <div style="background:var(--card);padding:1.4rem;border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="margin:0">ludo-cli</h3>
+        <span class="mono" style="font-size:.7rem;padding:.2rem .4rem;border-radius:4px;background:rgba(23,121,94,.1);color:var(--ok)">Stage 180</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Ludo-AI/ludo-cli: AI game asset & sprite generator CLI with 32 offline tools for Godot, Unity, Phaser, and Claude/Cursor coding agents.</p>
+      <a href="audits/ludo_cli_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
+    </div>
   </div>
 </div></section>
 
@@ -528,6 +536,7 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
 
   <div class="tabs" id="retroTabs" style="margin-top:1.5rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:.4rem">
     <button class="btn sm primary" onclick="selectRetro('adk-recipes', this)" aria-selected="true">google/adk-recipes</button>
+    <button class="btn sm" onclick="selectRetro('ludo-cli', this)" aria-selected="false">ludo-cli</button>
     <button class="btn sm" onclick="selectRetro('thealgorithms', this)" aria-selected="false">TheAlgorithms/Python</button>
     <button class="btn sm" onclick="selectRetro('kubernetes', this)" aria-selected="false">kubernetes</button>
     <button class="btn sm" onclick="selectRetro('rust', this)" aria-selected="false">rust-lang</button>
@@ -1006,6 +1015,31 @@ const RETRO_DATA = {
       "Zero AST circular import loops verified across 94,766 call boundaries.",
       "Decoupled ExecutionProtocol contract codified and accredited.",
       "Automated invariant regression test suite validated in CI."
+    ]
+  },
+  "ludo-cli": {
+    repo: "Ludo-AI/ludo-cli",
+    stage: "Stage 180 (FlowMind-v1.180.0-cognitive)",
+    creditOwner: "Ludo-AI",
+    license: "MIT",
+    url: "audits/ludo_cli_audit.html",
+    summary: "FlowMind analyzed Ludo AI CLI for human game developers and autonomous coding agents (Cursor, Claude Code, Gemini CLI), mapping 128 call boundaries across game asset generation, sprite sheet slicing, and physics collider tools.",
+    intent: "Bridging generative AI with deterministic game engine pipelines. Built for instant offline local asset manipulation (Godot, Unity, Phaser) combined with asynchronous cloud generation APIs.",
+    invariants: [
+      "[INV-001] Offline toolbox operations (spritesheets, colliders, audio) must function with zero cloud network dependencies.",
+      "[INV-002] Generated game assets must conform to engine-specific coordinate and pivot conventions without lossy distortion."
+    ],
+    ruledOut: [
+      "Online-only processing: Rejected to guarantee full offline developer productivity for game asset utilities.",
+      "Engine-locked proprietary formats: Rejected in favor of open standard JSON/PNG exports for Godot, Unity, and Phaser."
+    ],
+    takeaways: [
+      "Offline-first utility tooling builds immense trust with developers and autonomous coding agents.",
+      "Clear separation between local compute tasks and remote AI generation prevents pipeline blocking."
+    ],
+    milestones: [
+      "128 call graph boundaries and game asset pipelines analyzed with 0 cyclic dependencies.",
+      "Game asset pipeline invariants accredited into Cognitive Brain."
     ]
   },
   "thealgorithms": {

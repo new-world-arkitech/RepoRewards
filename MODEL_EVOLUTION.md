@@ -57,6 +57,7 @@ FlowMind operates strictly on an **Attribution-First AI** doctrine:
 | `EVO-STAGE-177-simplex-chat` | `FlowMind-v1.177.0-cognitive` | **simplex-chat** | [simplex-chat/simplex-chat](https://github.com/simplex-chat/simplex-chat) | `MIT` | Invariant Defense & Pattern Synthesis via simplex-chat (Targeted Invariant-Guarded Decoupling Strategy) | 2026-11-04 |
 | `EVO-STAGE-178-rust-lang` | `FlowMind-v1.178.0-cognitive` | **rust-lang** | [rust-lang/rust](https://github.com/rust-lang/rust) | `Proprietary / Unspecified` | Invariant Defense & Pattern Synthesis via rust (Targeted Invariant-Guarded Decoupling Strategy) | 2026-11-04 |
 | `EVO-STAGE-179-kubernetes` | `FlowMind-v1.179.0-cognitive` | **kubernetes** | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | `Apache-2.0` | Invariant Defense & Pattern Synthesis via kubernetes (Targeted Invariant-Guarded Decoupling Strategy) | 2026-11-04 |
+| `EVO-STAGE-180-Ludo-AI` | `FlowMind-v1.180.0-cognitive` | **Ludo-AI** | [Ludo-AI/ludo-cli](https://github.com/Ludo-AI/ludo-cli) | `MIT` | Invariant Defense & Pattern Synthesis via ludo-cli (Targeted Invariant-Guarded Decoupling Strategy) | 2026-11-04 |
 
 ---
 
@@ -945,6 +946,30 @@ Model capabilities advanced through deep architectural and dialectic synthesis o
 #### ⚡ Acquired Execution Skills & Directives
 - `CREATE_FILE: core/interfaces.py`
 - `ENFORCE_INVARIANT: hack/verify-flags-underscore.py`
+- `ADD_TEST: tests/test_architectural_invariants.py`
+
+#### 🛡️ Codified Architectural Invariants
+- `Domain entities must not directly import or invoke database / storage adapters.`
+- `State transitions must remain atomic and preserve immutability or lock protection.`
+- `Public method signatures on caller interfaces must maintain backward compatibility.`
+
+---
+
+### 🚀 Stage 038: Invariant Defense & Pattern Synthesis via ludo-cli (Targeted Invariant-Guarded Decoupling Strategy)
+- **Stage Identifier**: `EVO-STAGE-180-Ludo-AI`
+- **Model Version Tag**: `FlowMind-v1.180.0-cognitive`
+- **Accredited Maintainer**: **Ludo-AI**
+- **Source Repository**: `Ludo-AI/ludo-cli` *(License: `MIT`)*
+- **Recorded Timestamp**: `2026-11-04T14:40:33.271027+00:00`
+- **Official Attribution Citation**:
+  > 📜 *"FlowMind Model Evolution Stage 180 is officially credited to Ludo-AI for structural innovations and engineering patterns derived from 'ludo-cli' (MIT)."*
+
+#### 💡 Capability Leap & Structural Impact
+Model capabilities advanced through deep architectural and dialectic synthesis of Ludo-AI's codebase ('ludo-cli'). Acquired 3 specialized execution skills and 3 hard architectural invariants, elevating reasoning fidelity for domain decoupling and safe AST transformation.
+
+#### ⚡ Acquired Execution Skills & Directives
+- `CREATE_FILE: core/interfaces.py`
+- `ENFORCE_INVARIANT: scripts/align-fixtures.py`
 - `ADD_TEST: tests/test_architectural_invariants.py`
 
 #### 🛡️ Codified Architectural Invariants
