@@ -186,6 +186,7 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
     <a href="#council">Council</a>
     <a href="#simulator">Simulator</a>
     <a href="#spec">Spec</a>
+    <a href="#audits">Live Audits</a>
     <a href="https://github.com/new-world-arkitech/RepoRewards/blob/main/MODEL_EVOLUTION.md" target="_blank" rel="noopener">Evolution Ledger</a>
     <a href="https://github.com/new-world-arkitech/RepoRewards" target="_blank" rel="noopener">GitHub</a>
   </nav>
@@ -361,6 +362,45 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
     <div><h3>Error diagnostician</h3><p>Reads stack traces, flags anti-patterns such as mutable defaults, and drafts the fix.</p><code>flowmind --debug "AttributeError: ..."</code></div>
     <div><h3>Architectural guide</h3><p>Maps a change against your domain layer boundaries before you write any code.</p><code>flowmind --guide "Add Redis cache"</code></div>
     <div><h3>Retrospectives</h3><p>Writes a “what we learned” brief with ruled-out dead ends and trade-offs.</p><code>flowmind --retro session_004</code></div>
+  </div>
+</div></section>
+
+<section id="audits"><div class="wrap">
+  <h2>Live Repository Case Studies & Interactive HTML Audits</h2>
+  <p class="intro">Explore actual executive architectural audit reports synthesized live by FlowMind across benchmark repositories, complete with interactive Mermaid component flow DAGs, quantitative trade-off matrices, and Shannon author entropy diagnostics.</p>
+  <div class="tools" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+    <div style="background:var(--card);padding:1.4rem;border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="margin:0">Self</h3>
+        <span class="mono" style="font-size:.7rem;padding:.2rem .4rem;border-radius:4px;background:rgba(39,68,232,.1);color:var(--accent)">Stage 150</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">new-world-arkitech/Self: Component flow, decoupled boundaries, and foundational clean architecture.</p>
+      <a href="audits/self_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
+    </div>
+    <div style="background:var(--card);padding:1.4rem;border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="margin:0">nanoGPT</h3>
+        <span class="mono" style="font-size:.7rem;padding:.2rem .4rem;border-radius:4px;background:rgba(23,121,94,.1);color:var(--ok)">Stage 151</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">karpathy/nanoGPT: Minimal PyTorch transformer, acyclic training pipelines, and zero cyclic imports.</p>
+      <a href="audits/nanogpt_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
+    </div>
+    <div style="background:var(--card);padding:1.4rem;border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="margin:0">requests</h3>
+        <span class="mono" style="font-size:.7rem;padding:.2rem .4rem;border-radius:4px;background:rgba(184,50,42,.1);color:var(--bad)">Stage 152</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">psf/requests: High author entropy (H=2.25), socket transport adapters, and historical firefighting spirals.</p>
+      <a href="audits/requests_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
+    </div>
+    <div style="background:var(--card);padding:1.4rem;border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="margin:0">flask</h3>
+        <span class="mono" style="font-size:.7rem;padding:.2rem .4rem;border-radius:4px;background:rgba(39,68,232,.1);color:var(--accent)">Stage 153</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">pallets/flask: WSGI request context stacks, dynamic routing dispatch, and Blueprint modularization.</p>
+      <a href="audits/flask_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
+    </div>
   </div>
 </div></section>
 
