@@ -187,6 +187,7 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
     <a href="#simulator">Simulator</a>
     <a href="#spec">Spec</a>
     <a href="#audits">Live Audits</a>
+    <a href="#retrospective">What We Learned</a>
     <a href="https://github.com/new-world-arkitech/RepoRewards/blob/main/MODEL_EVOLUTION.md" target="_blank" rel="noopener">Evolution Ledger</a>
     <a href="https://github.com/new-world-arkitech/RepoRewards" target="_blank" rel="noopener">GitHub</a>
   </nav>
@@ -457,6 +458,29 @@ dialog li span{display:block;color:var(--muted);font-size:.84rem}
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">google/adk-recipes: Google Agent Development Kit patterns. 1,753 modules, 94,766 call boundaries, and 0 cyclic dependencies.</p>
       <a href="audits/adk_recipes_audit.html" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Audit Report</a>
     </div>
+  </div>
+</div></section>
+
+<!-- WHAT WE LEARNED: RETROSPECTIVE SECTION -->
+<section id="retrospective"><div class="wrap">
+  <div class="telemetry-header">
+    <div>
+      <h2>🎓 What We Learned: Architectural Retrospectives</h2>
+      <p class="intro" style="margin-bottom:0">Whenever FlowMind investigates a codebase, the 4-perspective Deliberation Council synthesizes a deep engineering retrospective: uncovering the original developer mental model, establishing immutable invariants, ruling out dangerous dead ends, and codifying core lessons for the engineering team.</p>
+    </div>
+  </div>
+
+  <div class="tabs" id="retroTabs" style="margin-top:1.5rem;margin-bottom:1.5rem">
+    <button class="btn sm primary" onclick="selectRetro('adk-recipes', this)" aria-selected="true">google/adk-recipes</button>
+    <button class="btn sm" onclick="selectRetro('omni3', this)" aria-selected="false">The-Arkitech/OMNI-3</button>
+    <button class="btn sm" onclick="selectRetro('beautifulos', this)" aria-selected="false">The-Arkitech/_beautifulOS</button>
+    <button class="btn sm" onclick="selectRetro('firebase', this)" aria-selected="false">firebase-tools</button>
+    <button class="btn sm" onclick="selectRetro('pocketbase', this)" aria-selected="false">pocketbase</button>
+    <button class="btn sm" onclick="selectRetro('supabase', this)" aria-selected="false">supabase</button>
+  </div>
+
+  <div id="retroContainer" style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2rem">
+    <!-- Populated by JavaScript -->
   </div>
 </div></section>
 
@@ -888,6 +912,237 @@ document.querySelectorAll("#sim input").forEach(i=>i.addEventListener("input",si
 sim();
 
 $("json").textContent=JSON.stringify(spec,null,2);
+
+/* =========================================================================
+   WHAT WE LEARNED: RETROSPECTIVE SELECTOR LOGIC
+   ========================================================================= */
+const RETRO_DATA = {
+  "adk-recipes": {
+    repo: "google/adk-recipes",
+    stage: "Stage 164 (FlowMind-v1.164.0-cognitive)",
+    creditOwner: "google (Google ADK Team)",
+    license: "Apache-2.0",
+    url: "audits/adk_recipes_audit.html",
+    summary: "During this session on 'adk-recipes', FlowMind analyzed 1,753 modules, 94,766 call boundaries, and 0 circular loops. The Multi-Agent Council reached unanimous consensus on: 'Targeted Invariant-Guarded Decoupling Strategy'.",
+    intent: "Engineered for enterprise modularity and pluggable vertical recipes. Developers prioritized strict component boundaries and clean single-responsibility packages, keeping the entire import graph acyclic despite massive scale.",
+    invariants: [
+      "[INV-001] Domain entities must not directly import or invoke database / storage adapters. (Scope: core.*)",
+      "[INV-002] State transitions must remain atomic and preserve immutability or lock protection. (Scope: services.*)",
+      "[INV-003] Public method signatures on caller interfaces must maintain backward compatibility. (Scope: api.*, services.*)"
+    ],
+    ruledOut: [
+      "Monolithic modernizer rewrite: Rejected by Council due to massive blast radius across 1,753 dependent callers.",
+      "In-place mutable monkeypatching: Rejected as it accumulates cognitive debt and masks underlying service coupling."
+    ],
+    takeaways: [
+      "Keep the component import graph acyclic—circular dependencies multiply bug surface areas exponentially.",
+      "Decouple domain business logic from database, network, and storage dependencies.",
+      "Always wrap shared hot-churn modules behind stable, backward-compatible protocols.",
+      "Preserve verified invariants with automated regression gates before merging code."
+    ],
+    milestones: [
+      "Zero AST circular import loops verified across 94,766 call boundaries.",
+      "Decoupled ExecutionProtocol contract codified and accredited.",
+      "Automated invariant regression test suite validated in CI."
+    ]
+  },
+  "omni3": {
+    repo: "The-Arkitech/OMNI-3",
+    stage: "Stage 157 (FlowMind-v1.157.0-cognitive)",
+    creditOwner: "The-Arkitech (Michael Scott)",
+    license: "Proprietary / Signature Encapsulated",
+    url: "audits/the_arkitech_omni3_audit.html",
+    summary: "During this session on 'OMNI-3', FlowMind mined 9 commits, 42 call boundaries, and verified cryptographic signature encapsulation. The Council synthesized a zero-mock execution invariant strategy.",
+    intent: "Protect, Preserve, Prosper. Developers designed a security-first system where cryptographic state and signature verification are immutable primitives, preventing unauthorized state corruption.",
+    invariants: [
+      "[INV-001] Cryptographic signatures and encapsulated blocks must verify before executing state mutations.",
+      "[INV-002] Domain entities must not bypass encryption or expose raw secrets to downstream adapters.",
+      "[INV-003] Public method signatures on caller interfaces must maintain backward compatibility."
+    ],
+    ruledOut: [
+      "Mock-based signature bypass: Rejected to strictly preserve Zero-Mock execution principles.",
+      "Mutable in-memory state overrides: Rejected because mutating encapsulated blocks invalidates the signature tree."
+    ],
+    takeaways: [
+      "Cryptographic encapsulation eliminates subtle data-tampering vectors.",
+      "Never mock security boundaries in core execution pathways.",
+      "Uphold zero-mock testing to ensure verified behavior mirrors production reality."
+    ],
+    milestones: [
+      "Zero circular import loops detected.",
+      "Signature encapsulation invariants verified.",
+      "ExecutionProtocol interface codified."
+    ]
+  },
+  "beautifulos": {
+    repo: "The-Arkitech/_beautifulOS",
+    stage: "Stage 158 (FlowMind-v1.158.0-cognitive)",
+    creditOwner: "The-Arkitech (Michael Scott)",
+    license: "Open / Proprietary",
+    url: "audits/the_arkitech_beautifulos_audit.html",
+    summary: "During this session on '_beautifulOS', FlowMind mined 12 commits, zero dependency cycles, and analyzed bare-metal agentic operating system dispatch routines in Rust.",
+    intent: "Bare Metal Zero Knowledge Agentic Operating System. Developers aimed for absolute minimal overhead, deterministic memory allocation, and zero-knowledge verification at the bare-metal kernel level.",
+    invariants: [
+      "[INV-001] Agentic kernel dispatch loops must avoid unbounded memory allocation in the critical event path.",
+      "[INV-002] Cryptographic state verification must occur before register mutation.",
+      "[INV-003] Interface contracts between agent and kernel must preserve backward compatibility."
+    ],
+    ruledOut: [
+      "Heavy userspace abstractions: Ruled out to preserve zero-knowledge, bare-metal hardware efficiency.",
+      "Loose dynamic typing: Ruled out in favor of Rust's compile-time memory safety invariants."
+    ],
+    takeaways: [
+      "Bare-metal constraints produce exceptionally disciplined and predictable systems.",
+      "Single-author focus prevents Conway drift and keeps core architectures tightly cohesive."
+    ],
+    milestones: [
+      "Zero cyclic boundaries in agent dispatch modules.",
+      "Verified Rust kernel memory invariants."
+    ]
+  },
+  "firebase": {
+    repo: "firebase/firebase-tools",
+    stage: "Stage 159 (FlowMind-v1.159.0-cognitive)",
+    creditOwner: "firebase",
+    license: "MIT",
+    url: "audits/firebase_tools_audit.html",
+    summary: "FlowMind analyzed 30 commits across 5 churn hotspots, uncovering Conway author entropy (H=2.32) and temporal firefighting spirals (<=72h) in emulator and crashlytics commands.",
+    intent: "High-velocity distributed development across specialized Firebase platform teams. Rapid feature delivery drove concurrent patches across release changelogs and emulator hooks.",
+    invariants: [
+      "[INV-001] CLI argument parsers must maintain backward compatibility for existing CI/CD automation.",
+      "[INV-002] Local emulator processes must trap exit signals and release port bindings cleanly."
+    ],
+    ruledOut: [
+      "Breaking monolithic rewrite: Rejected by Council to protect millions of existing developer deploy scripts."
+    ],
+    takeaways: [
+      "High author entropy (H > 2.0) requires automated regression gates to prevent multi-team merge collisions.",
+      "Rapid release spirals (<=72h) signal reactive firefighting—stabilize core interfaces with backward-compatible facades."
+    ],
+    milestones: [
+      "Identified and isolated emulator churn hotspots.",
+      "Established stable facade abstraction around high-entropy modules."
+    ]
+  },
+  "pocketbase": {
+    repo: "pocketbase/pocketbase",
+    stage: "Stage 160 (FlowMind-v1.160.0-cognitive)",
+    creditOwner: "pocketbase",
+    license: "MIT",
+    url: "audits/pocketbase_audit.html",
+    summary: "FlowMind mined 30 commits with uniform single-maintainer author entropy (H=0.00), zero circular imports, and zero firefighting bursts in an embedded Go & SQLite architecture.",
+    intent: "Designed by Gani Georgiev for maximum simplicity, zero external runtime dependencies, and instant portable deployment.",
+    invariants: [
+      "[INV-001] SQLite database connections must enforce WAL-mode concurrency.",
+      "[INV-002] Database schema migrations must remain idempotent across restarts."
+    ],
+    ruledOut: [
+      "Distributed microservices split: Ruled out to preserve single-binary simplicity."
+    ],
+    takeaways: [
+      "Single-maintainer discipline can dramatically outpace distributed teams by eliminating communication overhead.",
+      "Embedded SQLite removes entire classes of distributed network failure modes."
+    ],
+    milestones: [
+      "Zero dependency cycles verified.",
+      "Perfect Conway cohesion (H=0.00) documented."
+    ]
+  },
+  "supabase": {
+    repo: "supabase/supabase",
+    stage: "Stage 162 (FlowMind-v1.162.0-cognitive)",
+    creditOwner: "supabase",
+    license: "Apache-2.0",
+    url: "audits/supabase_audit.html",
+    summary: "FlowMind mapped 60 call graph boundaries across Studio UI, database client hooks, and cloud adapters, diagnosing Conway author entropy H=1.58.",
+    intent: "The open-source Firebase alternative. Developers orchestrated a multi-language monorepo (Next.js, Elixir, Go, PostgreSQL) prioritizing rapid cloud parity with proprietary platforms.",
+    invariants: [
+      "[INV-001] Studio UI state must not bypass PostgreSQL Row-Level Security (RLS) policies.",
+      "[INV-002] Public API interfaces must maintain backward compatibility across major Postgres releases."
+    ],
+    ruledOut: [
+      "Splitting the monorepo: Ruled out to avoid fragmented cross-package version synchronization."
+    ],
+    takeaways: [
+      "Standardize on open protocols (PostgreSQL, SQL) to eliminate proprietary vendor lock-in.",
+      "Monorepos require clear package boundary isolation to prevent UI churn from leaking into database services."
+    ],
+    milestones: [
+      "60 call graph boundaries mapped across studio services.",
+      "Decoupled cloud provider adapters established."
+    ]
+  }
+};
+
+function selectRetro(key, btn) {
+  const d = RETRO_DATA[key];
+  if (!d) return;
+
+  // Update button active state
+  document.querySelectorAll("#retroTabs button").forEach(b => {
+    b.classList.remove("primary");
+    b.setAttribute("aria-selected", "false");
+  });
+  if (btn) {
+    btn.classList.add("primary");
+    btn.setAttribute("aria-selected", "true");
+  }
+
+  const container = $("retroContainer");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--line);padding-bottom:1rem">
+      <div>
+        <h3 style="font-size:1.45rem;margin:0 0 .3rem 0">${d.repo}</h3>
+        <span class="mono" style="font-size:.78rem;color:var(--muted)">${d.stage} &bull; Author: <strong style="color:var(--ink)">${d.creditOwner}</strong> (${d.license})</span>
+      </div>
+      <a href="${d.url}" class="btn sm" target="_blank" style="text-decoration:none">📊 Open Full Interactive Audit Report</a>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div style="background:var(--code);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:1.15rem;margin-bottom:1.25rem">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);font-weight:700;margin-bottom:.35rem">📌 Executive Retrospective Summary</div>
+      <div style="font-size:.95rem;line-height:1.6;color:var(--ink)">${d.summary}</div>
+    </div>
+
+    <!-- DEVELOPER INTENT -->
+    <div style="background:var(--code);border-left:4px solid var(--ok);border-radius:0 6px 6px 0;padding:1.15rem;margin-bottom:1.75rem">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ok);font-weight:700;margin-bottom:.35rem">🧠 Developer Mental Model & Mindset Uncovered</div>
+      <div style="font-size:.95rem;line-height:1.6;color:var(--ink)">${d.intent}</div>
+    </div>
+
+    <!-- TWO-COLUMN GRID: INVARIANTS & LESSONS vs DEAD ENDS & MILESTONES -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:1.5rem">
+      <div>
+        <h4 style="font-size:1.05rem;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem">🛡️ Non-Negotiable Invariants Established</h4>
+        <ul style="padding-left:1.25rem;margin:0 0 1.25rem 0;font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:.45rem">
+          ${d.invariants.map(inv => `<li style="color:var(--ink)"><code class="mono" style="font-size:.8rem;background:rgba(143,163,255,.1);color:var(--accent);padding:.15rem .35rem;border-radius:3px">${inv}</code></li>`).join("")}
+        </ul>
+
+        <h4 style="font-size:1.05rem;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem">💡 Top Engineering Lessons for the Team</h4>
+        <ol style="padding-left:1.25rem;margin:0;font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:.45rem">
+          ${d.takeaways.map(t => `<li style="color:var(--ink)"><span style="color:var(--ink)">${t}</span></li>`).join("")}
+        </ol>
+      </div>
+
+      <div>
+        <h4 style="font-size:1.05rem;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem">🚫 Approaches Ruled Out (Council Dead Ends)</h4>
+        <ul style="padding-left:1.25rem;margin:0 0 1.25rem 0;font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:.45rem">
+          ${d.ruledOut.map(ro => `<li style="color:var(--bad)">${ro}</li>`).join("")}
+        </ul>
+
+        <h4 style="font-size:1.05rem;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem">🎯 Verified Milestones Achieved</h4>
+        <ul style="padding-left:1.25rem;margin:0;font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:.45rem">
+          ${d.milestones.map(ms => `<li style="color:var(--ok)">${ms}</li>`).join("")}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// Initialize with adk-recipes on page load
+selectRetro("adk-recipes", document.querySelector("#retroTabs button"));
 
 let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2400)}
 function copy(text,msg){const a=document.createElement("textarea");a.value=text;a.style.cssText="position:fixed;left:-9999px";document.body.append(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();toast(ok?msg:"Copy failed. Select the text and copy it manually.")}
