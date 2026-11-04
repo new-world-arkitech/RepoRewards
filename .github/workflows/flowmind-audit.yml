@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request number to audit and review"
+        required: false
+        default: ""
+      head_sha:
+        description: "Head commit SHA"
+        required: false
+        default: ""
 
 permissions:
   contents: write

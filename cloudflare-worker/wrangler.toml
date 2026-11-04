@@ -1,0 +1,16 @@
+name = "flowmind-webhook-gateway"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Custom domain routing on Cloudflare
+routes = [
+  { pattern = "webhook.new-world-arkitech.dev/*", zone_name = "new-world-arkitech.dev" }
+]
+
+[vars]
+WORKFLOW_ID = "flowmind-audit.yml"
+
+# Secrets to be configured via `wrangler secret put <NAME>` or Cloudflare Dashboard:
+# - GITHUB_WEBHOOK_SECRET: Secret shared with GitHub App / Webhook settings
+# - GITHUB_TOKEN: GitHub Fine-Grained Personal Access Token (or App Installation Token)
+# - FLOWMIND_BACKEND_URL: (Optional) URL of your local/hosted FlowMind FastAPI server
